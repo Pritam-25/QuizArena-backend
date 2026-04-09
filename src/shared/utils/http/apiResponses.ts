@@ -1,5 +1,5 @@
-import type { ApiError } from "../errors/apiError.js";
-import { getRequestId } from "../context/getRequestId.js";
+import type { ApiError } from "@shared/utils/errors/index.js";
+import { getRequestId } from "@shared/utils/context/index.js";
 
 export const successResponse = <T>(message: string, data?: T) => ({
   success: true as const,
@@ -17,7 +17,9 @@ export const errorResponse = <T>(error: ApiError) => ({
     statusCode: error.statusCode,
     errorCode: error.errorCode,
     message: error.message,
-    ...(error.details ? { details: error.details } : {}),
+    ...(error.statusCode < 500 && error.details
+      ? { details: error.details }
+      : {}),
   },
   meta: {
     timestamp: new Date().toISOString(),
