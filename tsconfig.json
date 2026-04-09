@@ -33,12 +33,19 @@
     // "noPropertyAccessFromIndexSignature": true,
 
     // Recommended Options
+    "ignoreDeprecations": "6.0",
+    "baseUrl": "./",
+    "paths": {
+      "@config/*": ["src/config/*"],
+      "@shared/*": ["src/shared/*"]
+    },
+
     "strict": true,
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
+    "skipLibCheck": true
   }
 }
