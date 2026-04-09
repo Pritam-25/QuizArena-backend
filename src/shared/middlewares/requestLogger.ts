@@ -7,7 +7,11 @@ const requestLoggerMiddleware = (
 ) => {
   const start = Date.now();
 
+  let logged = false;
+
   const logRequest = () => {
+    if (logged) return;
+    logged = true;
     const duration = Date.now() - start;
     const sanitizedPath = req.baseUrl + req.path;
 
