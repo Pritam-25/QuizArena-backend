@@ -1,5 +1,5 @@
-import type { ErrorCode } from "./errorCodes.js";
-import { ERROR_MESSAGES } from "./errorMessages.js";
+import type { ErrorCode } from './errorCodes.js';
+import { ERROR_MESSAGES } from './errorMessages.js';
 
 export class ApiError extends Error {
   statusCode: number;

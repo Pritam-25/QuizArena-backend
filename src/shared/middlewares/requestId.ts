@@ -1,6 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
-import { randomUUID } from "crypto";
-import { asyncLocalStorage } from "@shared/utils/context/requestContext.js";
+import type { Request, Response, NextFunction } from 'express';
+import { randomUUID } from 'crypto';
+import { asyncLocalStorage } from '@shared/utils/context/requestContext.js';
 
 const MAX_REQUEST_ID_LENGTH = 64;
 const SAFE_REQUEST_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
@@ -18,14 +18,14 @@ const isValidRequestId = (value: string): boolean => {
 const requestIdMiddleware = (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
-  const incoming = req.headers["x-request-id"];
+  const incoming = req.headers['x-request-id'];
   const normalizedIncoming = Array.isArray(incoming)
-    ? (incoming[0] ?? "")
+    ? (incoming[0] ?? '')
     : incoming !== undefined
       ? String(incoming)
-      : "";
+      : '';
   const trimmedIncoming = normalizedIncoming.trim();
   const requestId = isValidRequestId(trimmedIncoming)
     ? trimmedIncoming
@@ -33,7 +33,7 @@ const requestIdMiddleware = (
 
   asyncLocalStorage.run({ requestId }, () => {
     req.requestId = requestId;
-    res.setHeader("X-Request-Id", requestId);
+    res.setHeader('X-Request-Id', requestId);
     next();
   });
 };

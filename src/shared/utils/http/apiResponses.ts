@@ -1,5 +1,5 @@
-import type { ApiError } from "@shared/utils/errors/index.js";
-import { getRequestId } from "@shared/utils/context/index.js";
+import type { ApiError } from '@shared/utils/errors/index.js';
+import { getRequestId } from '@shared/utils/context/index.js';
 
 export const successResponse = <T>(message: string, data?: T) => ({
   success: true as const,

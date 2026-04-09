@@ -1,9 +1,9 @@
-import type{ Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from 'express';
 
 const requestLoggerMiddleware = (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   const start = Date.now();
 
@@ -14,12 +14,14 @@ const requestLoggerMiddleware = (
     const logMeta = {
       method: req.method,
       path: sanitizedPath,
-      ip: req.headers["x-forwarded-for"] || req.ip,
-      userAgent: req.headers["user-agent"],
+      ip: req.ip,
+      forwardedIps:
+        Array.isArray(req.ips) && req.ips.length ? req.ips : undefined,
+      userAgent: req.headers['user-agent'],
       requestId: req.requestId,
       statusCode: res.statusCode,
       durationMs: duration,
-      contentLength: res.getHeader("content-length"),
+      contentLength: res.getHeader('content-length'),
     };
 
     const message = `${req.method} ${sanitizedPath}`;
@@ -40,8 +42,8 @@ const requestLoggerMiddleware = (
     log.info(logMeta, message);
   };
 
-  res.on("finish", logRequest);
-  res.on("close", logRequest); 
+  res.on('finish', logRequest);
+  res.on('close', logRequest);
 
   next();
 };
