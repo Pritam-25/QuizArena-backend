@@ -10,6 +10,7 @@ export const env = createEnv({
       .default('development'),
     DATABASE_URL: z.url(),
     SERVICE_NAME: z.string().default('quiz-arena-api'),
+    LOKI_HOST: z.url().optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

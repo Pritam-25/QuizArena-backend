@@ -9,7 +9,7 @@
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "target": "esnext",
-    "types": [],
+    "types": ["node"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -37,7 +37,8 @@
     "baseUrl": "./",
     "paths": {
       "@config/*": ["src/config/*"],
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@monitoring/*": ["src/monitoring/*"]
     },
 
     "strict": true,
