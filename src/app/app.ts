@@ -1,16 +1,16 @@
 import express from 'express';
-import type { Request, Response, Application, NextFunction } from 'express';
+import type { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import {
+  errorHandlerMiddleware,
   metricsMiddleware,
   requestIdMiddleware,
   requestLoggerMiddleware,
   traceIdHeaderMiddleware,
 } from '@shared/middlewares/index.js';
-import { statusCode, successResponse } from '@shared/utils/http/index.js';
-import client from 'prom-client';
+import router from './routes.js';
 
 const app: Application = express();
 
@@ -42,40 +42,8 @@ app.use(metricsMiddleware);
  */
 app.use(requestLoggerMiddleware);
 
-/**
- * Health Check
- */
-app.get('/health', (_req: Request, res: Response) => {
-  res.status(statusCode.success).json(
-    successResponse('Service is healthy', {
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-    })
-  );
-});
+app.use('/api/v1', router);
 
-/**
- * Metrics Route
- */
-app.get('/metrics', async (_req: Request, res: Response) => {
-  res.setHeader('Content-Type', client.register.contentType);
-  const metrics = await client.register.metrics();
-  res.send(metrics);
-});
-
-/**
- * Root Route
- */
-app.get('/', (_req: Request, res: Response) => {
-  res.status(statusCode.success).json(
-    successResponse('Welcome to the Live Quiz Arena API', {
-      version: '1.0.0',
-      endpoints: {
-        health: '/health',
-      },
-    })
-  );
-});
+app.use(errorHandlerMiddleware);
 
 export default app;

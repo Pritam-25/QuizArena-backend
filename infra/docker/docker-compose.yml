@@ -4,11 +4,11 @@ services:
     container_name: tempo
     command: ['-config.file=/etc/tempo.yaml']
     volumes:
-      - ./tempo.yml:/etc/tempo.yaml
+      - ../observability/tempo.yml:/etc/tempo.yaml
     ports:
       - '3200:3200' # Tempo HTTP API
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3200/api/v1/version']
+      test: ['CMD', 'wget', '-q', '-O-', 'http://localhost:3200/status']
       interval: 5s
       timeout: 2s
       retries: 5
@@ -19,7 +19,7 @@ services:
     container_name: alloy
     command: ['run', '/etc/alloy/config.alloy']
     volumes:
-      - ./src/infra/observability/alloy.config:/etc/alloy/config.alloy
+      - ../observability/alloy.config:/etc/alloy/config.alloy
     ports:
       - '4317:4317' # OTLP gRPC receiver
       - '4318:4318' # OTLP HTTP receiver

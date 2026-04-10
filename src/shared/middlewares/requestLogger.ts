@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import logger from '@config/logger.js';
+import logger from '@infrastructure/logger/logger.js';
 import { getTraceId } from '@shared/utils/context/index.js';
 
 const requestLoggerMiddleware = (
