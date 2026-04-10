@@ -60,7 +60,8 @@ app.get('/health', (_req: Request, res: Response) => {
  */
 app.get('/metrics', async (_req: Request, res: Response) => {
   res.setHeader('Content-Type', client.register.contentType);
-  res.send(await client.register.metrics());
+  const metrics = await client.register.metrics();
+  res.send(metrics);
 });
 
 /**

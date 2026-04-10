@@ -1,0 +1,17 @@
+services:
+  tempo:
+    image: grafana/tempo:2.4.1
+    container_name: tempo
+    command: ['-config.file=/etc/tempo.yaml']
+    volumes:
+      - ./tempo.yml:/etc/tempo.yaml
+    ports:
+      - '3200:3200' # Tempo HTTP API
+      - '4318:4318' # OTLP HTTP
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - '3000:3000' # Grafana HTTP API
+    restart: always

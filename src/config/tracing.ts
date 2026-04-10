@@ -46,13 +46,7 @@ const sdk = new NodeSDK({
   sampler: new ParentBasedSampler({
     root: new TraceIdRatioBasedSampler(sampleRatio),
   }),
-  instrumentations: [
-    getNodeAutoInstrumentations({
-      '@opentelemetry/instrumentation-http': {
-        enabled: false,
-      },
-    }),
-  ],
+  instrumentations: [getNodeAutoInstrumentations()],
 });
 
 // Start immediately so this file can be used with `--import` before application code
