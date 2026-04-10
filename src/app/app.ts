@@ -1,8 +1,8 @@
-import express from "express";
-import type { Request, Response, Application } from "express";
-import cors from "cors";
-import helmet from "helmet";
-import cookieParser from "cookie-parser";
+import express from 'express';
+import type { Request, Response, Application } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 
 const app: Application = express();
 
@@ -14,7 +14,7 @@ app.use(
   cors({
     origin: true,
     credentials: true,
-  }),
+  })
 );
 app.use(cookieParser());
 app.use(express.json());
@@ -23,9 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 /**
  * Health Check
  */
-app.get("/health", (_req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
-    status: "healthy",
+    status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
@@ -34,9 +34,9 @@ app.get("/health", (_req: Request, res: Response) => {
 /**
  * Root Route
  */
-app.get("/", (_req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
-    message: "Welcome to the Live Quiz App Backend!",
+    message: 'Welcome to the Live Quiz App Backend!',
   });
 });
 
