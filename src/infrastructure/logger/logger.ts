@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { env } from './env.js';
+import { env } from '@config/env.js';
 
 const isProd = env.NODE_ENV === 'production';
 const isLokiEnabled = isProd && Boolean(env.LOKI_HOST);

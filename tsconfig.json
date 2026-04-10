@@ -38,7 +38,10 @@
     "paths": {
       "@config/*": ["src/config/*"],
       "@shared/*": ["src/shared/*"],
-      "@monitoring/*": ["src/monitoring/*"]
+      "@monitoring/*": ["src/monitoring/*"],
+      "@infrastructure/*": ["src/infrastructure/*"],
+      "@modules/*": ["src/modules/*"],
+      "@generated/*": ["src/generated/*"]
     },
 
     "strict": true,

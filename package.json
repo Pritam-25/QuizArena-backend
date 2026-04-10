@@ -14,15 +14,19 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node --import ./dist/config/tracing.js -r tsconfig-paths/register dist/app/server.js",
-    "dev": "tsx watch --import src/config/tracing.ts src/app/server.ts",
+    "start": "node --import ./dist/infrastructure/tracing/tracing.js -r tsconfig-paths/register dist/app/server.js",
+    "dev": "tsx watch --import ./src/infrastructure/tracing/tracing.ts ./src/app/server.ts",
     "build": "tsc && tsc-alias",
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "pnpm run type-check",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docker:up": "docker compose -f infra/docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f infra/docker/docker-compose.yml down",
+    "docker:build": "docker compose -f infra/docker/docker-compose.yml build",
+    "docker:logs": "docker compose -f infra/docker/docker-compose.yml logs -f"
   },
   "keywords": [],
   "author": "",

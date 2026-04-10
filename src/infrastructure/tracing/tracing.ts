@@ -9,7 +9,7 @@ import {
   ParentBasedSampler,
   TraceIdRatioBasedSampler,
 } from '@opentelemetry/sdk-trace-base';
-import { env } from './env.js';
+import { env } from '@config/env.js';
 
 // Enable diagnostic logging when requested
 if (env.OTEL_DEBUG === 'true') {
