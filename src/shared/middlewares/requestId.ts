@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { randomUUID } from 'crypto';
 import { asyncLocalStorage } from '@shared/utils/context/requestContext.js';
+import logger from '@config/logger.js';
 
 const MAX_REQUEST_ID_LENGTH = 64;
 const SAFE_REQUEST_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
@@ -33,6 +34,7 @@ const requestIdMiddleware = (
 
   asyncLocalStorage.run({ requestId }, () => {
     req.requestId = requestId;
+    req.logger = logger.child({ requestId });
     res.setHeader('X-Request-Id', requestId);
     next();
   });

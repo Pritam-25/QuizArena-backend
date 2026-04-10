@@ -1,8 +1,15 @@
 import express from 'express';
-import type { Request, Response, Application } from 'express';
+import type { Request, Response, Application, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import {
+  metricsMiddleware,
+  requestIdMiddleware,
+  requestLoggerMiddleware,
+} from '@shared/middlewares/index.js';
+import { statusCode, successResponse } from '@shared/utils/http/index.js';
+import client from 'prom-client';
 
 const app: Application = express();
 
@@ -20,24 +27,50 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Metrics middleware should run early to observe all requests
+app.use(metricsMiddleware);
+
+// Request ID middleware (must run before request logging)
+app.use(requestIdMiddleware);
+
+/**
+ * Request Logger
+ */
+app.use(requestLoggerMiddleware);
+
 /**
  * Health Check
  */
 app.get('/health', (_req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
+  res.status(statusCode.success).json(
+    successResponse('Service is healthy', {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    })
+  );
+});
+
+/**
+ * Metrics Route
+ */
+app.get('/metrics', async (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', client.register.contentType);
+  res.send(await client.register.metrics());
 });
 
 /**
  * Root Route
  */
 app.get('/', (_req: Request, res: Response) => {
-  res.status(200).json({
-    message: 'Welcome to the Live Quiz App Backend!',
-  });
+  res.status(statusCode.success).json(
+    successResponse('Welcome to the Live Quiz Arena API', {
+      version: '1.0.0',
+      endpoints: {
+        health: '/health',
+      },
+    })
+  );
 });
 
 export default app;

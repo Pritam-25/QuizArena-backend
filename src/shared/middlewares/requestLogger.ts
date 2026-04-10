@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import logger from '@config/logger.js';
 
 const requestLoggerMiddleware = (
   req: Request,
@@ -13,25 +14,20 @@ const requestLoggerMiddleware = (
     if (logged) return;
     logged = true;
     const duration = Date.now() - start;
-    const sanitizedPath = req.baseUrl + req.path;
+    const sanitizedPath = req.originalUrl ?? req.url ?? req.path ?? '/';
 
     const logMeta = {
       method: req.method,
       path: sanitizedPath,
-      ip: req.ip,
-      forwardedIps:
-        Array.isArray(req.ips) && req.ips.length ? req.ips : undefined,
-      userAgent: req.headers['user-agent'],
       requestId: req.requestId,
       statusCode: res.statusCode,
       durationMs: duration,
-      contentLength: res.getHeader('content-length'),
+      module: 'http',
     };
 
-    const message = `${req.method} ${sanitizedPath}`;
+    const message = `${req.method} ${sanitizedPath} ${res.statusCode} ${duration}ms`;
 
-    // Use request-scoped logger
-    const log = req.logger ?? console;
+    const log = req.logger ?? logger;
 
     if (res.statusCode >= 500) {
       log.error(logMeta, message);
