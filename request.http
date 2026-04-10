@@ -1,1 +1,13 @@
-GET http://localhost:4000
+@baseUrl = http://localhost:4000
+
+###
+# Root
+GET {{baseUrl}}/
+
+###
+# Health
+GET {{baseUrl}}/health
+
+###
+# Metrics
+GET {{baseUrl}}/metrics

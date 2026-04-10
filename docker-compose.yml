@@ -7,7 +7,25 @@ services:
       - ./tempo.yml:/etc/tempo.yaml
     ports:
       - '3200:3200' # Tempo HTTP API
-      - '4318:4318' # OTLP HTTP
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3200/api/v1/version']
+      interval: 5s
+      timeout: 2s
+      retries: 5
+      start_period: 10s
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    command: ['run', '/etc/alloy/config.alloy']
+    volumes:
+      - ./src/infra/observability/alloy.config:/etc/alloy/config.alloy
+    ports:
+      - '4317:4317' # OTLP gRPC receiver
+      - '4318:4318' # OTLP HTTP receiver
+    depends_on:
+      tempo:
+        condition: service_healthy
 
   grafana:
     image: grafana/grafana:latest
