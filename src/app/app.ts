@@ -27,11 +27,11 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Metrics middleware should run early to observe all requests
-app.use(metricsMiddleware);
-
-// Request ID middleware (must run before request logging)
+// Request ID middleware should run first so downstream code gets requestId
 app.use(requestIdMiddleware);
+
+// Metrics middleware should run after requestId so metrics can include requestId
+app.use(metricsMiddleware);
 
 /**
  * Request Logger

@@ -1,13 +1,14 @@
 import type { ApiError } from '@shared/utils/errors/index.js';
 import { getRequestId } from '@shared/utils/context/index.js';
+import { getTraceId } from '@shared/utils/context/index.js';
 
 export const successResponse = <T>(message: string, data?: T) => ({
   success: true as const,
   message,
   data,
   meta: {
-    timestamp: new Date().toISOString(),
     requestId: getRequestId(),
+    traceId: getTraceId(),
   },
 });
 
@@ -22,7 +23,7 @@ export const errorResponse = <T>(error: ApiError) => ({
       : {}),
   },
   meta: {
-    timestamp: new Date().toISOString(),
     requestId: getRequestId(),
+    traceId: getTraceId(),
   },
 });

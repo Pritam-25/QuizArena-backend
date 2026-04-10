@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import logger from '@config/logger.js';
+import { getTraceId } from '@shared/utils/context/index.js';
 
 const requestLoggerMiddleware = (
   req: Request,
@@ -17,10 +18,13 @@ const requestLoggerMiddleware = (
     const rawPath = req.originalUrl ?? req.url ?? req.path ?? '/';
     const sanitizedPath = rawPath.split('?')[0] || '/';
 
+    const traceId = getTraceId();
+
     const logMeta = {
       method: req.method,
       path: sanitizedPath,
       requestId: req.requestId,
+      traceId,
       statusCode: res.statusCode,
       durationMs: duration,
       module: 'http',
