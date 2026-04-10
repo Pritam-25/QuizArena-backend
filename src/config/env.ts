@@ -10,6 +10,8 @@ export const env = createEnv({
       .default('development'),
     DATABASE_URL: z.url(),
     SERVICE_NAME: z.string().default('quiz-arena-api'),
+    OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
+    OTEL_DEBUG: z.enum(['true', 'false']).default('false'),
     LOKI_HOST: z.url().optional(),
   },
   runtimeEnv: process.env,
