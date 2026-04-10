@@ -14,7 +14,8 @@ const requestLoggerMiddleware = (
     if (logged) return;
     logged = true;
     const duration = Date.now() - start;
-    const sanitizedPath = req.originalUrl ?? req.url ?? req.path ?? '/';
+    const rawPath = req.originalUrl ?? req.url ?? req.path ?? '/';
+    const sanitizedPath = rawPath.split('?')[0] || '/';
 
     const logMeta = {
       method: req.method,

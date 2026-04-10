@@ -21,7 +21,7 @@ const metricsMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const route =
       typeof routePath === 'string'
         ? `${req.baseUrl || ''}${routePath}`
-        : (req.originalUrl ?? req.path);
+        : 'unmatched';
     const status = String(res.statusCode);
 
     httpRequestCounter.inc({
