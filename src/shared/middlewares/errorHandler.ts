@@ -22,7 +22,11 @@ const getStatusCode = (err: unknown): number => {
   return statusCode.internalError;
 };
 
-const errorHandlerMiddleware: ErrorRequestHandler = (err, req, res, _next) => {
+const errorHandlerMiddleware: ErrorRequestHandler = (err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+
   const status = getStatusCode(err);
   const rawPath = req.originalUrl ?? req.url ?? req.path ?? '/';
   const sanitizedPath = rawPath.split('?')[0] || '/';
@@ -45,12 +49,11 @@ const errorHandlerMiddleware: ErrorRequestHandler = (err, req, res, _next) => {
     return res.status(err.statusCode).json(errorResponse(err));
   }
 
-  const internalError = new ApiError(
-    statusCode.internalError,
-    ERROR_CODES.INTERNAL_ERROR
-  );
+  const internalError = new ApiError(status, ERROR_CODES.INTERNAL_ERROR);
 
-  return res.status(status).json(errorResponse(internalError));
+  return res
+    .status(internalError.statusCode)
+    .json(errorResponse(internalError));
 };
 
 export default errorHandlerMiddleware;

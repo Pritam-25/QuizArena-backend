@@ -24,21 +24,22 @@ const shutdown = async (signal: NodeJS.Signals) => {
     'Shutdown signal received. Closing server gracefully...'
   );
 
-  try {
-    await prisma.$disconnect();
-    logger.info('Prisma disconnected');
-  } catch (error) {
-    logger.error({ err: error }, 'Failed to disconnect Prisma');
-  }
-
-  server.close((error?: Error) => {
+  server.close(async (error?: Error) => {
     if (error) {
       logger.error({ err: error }, 'Error while closing HTTP server');
       process.exit(1);
-      return;
     }
 
     logger.info('HTTP server closed');
+
+    try {
+      await prisma.$disconnect();
+      logger.info('Prisma disconnected');
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to disconnect Prisma');
+      process.exit(1);
+    }
+
     process.exit(0);
   });
 };

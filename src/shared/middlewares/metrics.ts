@@ -3,7 +3,7 @@ import {
   activeRequestsGauge,
   httpRequestCounter,
   httpRequestDuration,
-} from 'src/infrastructure/metrics/metrics.js';
+} from '@infrastructure/metrics/metrics.js';
 
 const metricsMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const start = process.hrtime.bigint();
