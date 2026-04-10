@@ -7,6 +7,7 @@ import {
   metricsMiddleware,
   requestIdMiddleware,
   requestLoggerMiddleware,
+  traceIdHeaderMiddleware,
 } from '@shared/middlewares/index.js';
 import { statusCode, successResponse } from '@shared/utils/http/index.js';
 import client from 'prom-client';
@@ -29,6 +30,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request ID middleware should run first so downstream code gets requestId
 app.use(requestIdMiddleware);
+
+// Add distributed trace id to response headers for client-side correlation
+app.use(traceIdHeaderMiddleware);
 
 // Metrics middleware should run after requestId so metrics can include requestId
 app.use(metricsMiddleware);

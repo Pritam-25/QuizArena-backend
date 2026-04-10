@@ -4,6 +4,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-node';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+import { EventEmitter } from 'events';
 import {
   ParentBasedSampler,
   TraceIdRatioBasedSampler,
@@ -15,7 +16,15 @@ if (env.OTEL_DEBUG === 'true') {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 }
 
+// Increase default max listeners to avoid MaxListenersExceededWarning from instrumentation
+EventEmitter.defaultMaxListeners = 20;
+
 const otlpEndpoint = env.OTEL_EXPORTER_OTLP_ENDPOINT;
+
+if (!otlpEndpoint && env.NODE_ENV === 'production') {
+  throw new Error('OTEL_EXPORTER_OTLP_ENDPOINT is required in production');
+}
+
 const traceExporter = otlpEndpoint
   ? new OTLPTraceExporter({
       url: otlpEndpoint,
@@ -29,16 +38,18 @@ const resource = resourceFromAttributes({
   'deployment.environment': env.NODE_ENV || 'development',
 });
 
+const sampleRatio = env.NODE_ENV === 'production' ? 0.1 : 1.0;
+
 const sdk = new NodeSDK({
   resource,
   traceExporter,
   sampler: new ParentBasedSampler({
-    root: new TraceIdRatioBasedSampler(1.0),
+    root: new TraceIdRatioBasedSampler(sampleRatio),
   }),
   instrumentations: [
     getNodeAutoInstrumentations({
       '@opentelemetry/instrumentation-http': {
-        enabled: true,
+        enabled: false,
       },
     }),
   ],
