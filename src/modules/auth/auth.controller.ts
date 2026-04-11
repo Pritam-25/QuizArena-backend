@@ -6,8 +6,17 @@ import { AuthService } from './auth.service.js';
 import { AUTH_COOKIE_MAX_AGE_MS, AUTH_COOKIE_NAME } from './auth.constants.js';
 
 export class AuthController {
+  /**
+   * Creates controller instance for auth HTTP handlers.
+   * @param service - Auth service instance
+   */
   constructor(private service: AuthService) {}
 
+  /**
+   * Sets the authentication cookie in the response.
+   * @param res - Express response
+   * @param token - Signed JWT token
+   */
   private setAuthCookie(res: Response, token: string) {
     res.cookie(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
@@ -18,6 +27,11 @@ export class AuthController {
     });
   }
 
+  /**
+   * Registers a user and issues authentication cookie.
+   * @param req - Express request
+   * @param res - Express response
+   */
   async register(req: Request, res: Response) {
     const payload = req.body as RegisterDto;
     const authResult = await this.service.register(payload);
@@ -31,6 +45,11 @@ export class AuthController {
     );
   }
 
+  /**
+   * Logs in a user and issues authentication cookie.
+   * @param req - Express request
+   * @param res - Express response
+   */
   async login(req: Request, res: Response) {
     const payload = req.body as LoginDto;
     const authResult = await this.service.login(payload);

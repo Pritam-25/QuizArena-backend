@@ -11,14 +11,30 @@ import { toAuthResponseDto } from './auth.mapper.js';
 import type { AuthResponseDto } from './auth.dto.js';
 
 export class AuthService {
+  /**
+   * Creates service instance for auth business logic.
+   * @param repo - Auth repository instance
+   */
   constructor(private repo: AuthRepository) {}
 
+  /**
+   * Generates JWT token for authenticated users.
+   * @param userId - User ID
+   * @returns Signed JWT token
+   */
   private generateToken(userId: string) {
     return jwt.sign({ userId }, env.JWT_SECRET, {
       expiresIn: '7d',
     });
   }
 
+  /**
+   * Registers a new user.
+   * Performs duplicate checks and password hashing.
+   * @param data - Register payload
+   * @returns Auth response with token and user data
+   * @throws ApiError when user already exists
+   */
   async register(data: RegisterDto): Promise<AuthResponseDto> {
     const existingUser = await this.repo.findUserByEmail(data.email);
     if (existingUser) {
@@ -54,6 +70,12 @@ export class AuthService {
     return toAuthResponseDto(user, token);
   }
 
+  /**
+   * Authenticates an existing user.
+   * @param data - Login payload
+   * @returns Auth response with token and user data
+   * @throws ApiError when credentials are invalid
+   */
   async login(data: LoginDto): Promise<AuthResponseDto> {
     const user = await this.repo.findUserByEmail(data.email);
 

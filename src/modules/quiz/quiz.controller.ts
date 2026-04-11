@@ -1,6 +1,6 @@
 import { ApiError } from '@shared/utils/errors/apiError.js';
 import type { QuizService } from './quiz.service.js';
-import { statusCode } from '@shared/utils/http/index.js';
+import { statusCode, successResponse } from '@shared/utils/http/index.js';
 import { ERROR_CODES } from '@shared/utils/errors/index.js';
 import type { Request, Response } from 'express';
 import type {
@@ -35,9 +35,9 @@ export class QuizController {
     };
 
     const quiz = await this.service.createQuiz(quizData);
-    res
+    return res
       .status(statusCode.created)
-      .json({ message: 'Quiz created', data: quiz });
+      .json(successResponse('Quiz created', quiz));
   }
 
   /**
@@ -47,7 +47,9 @@ export class QuizController {
    */
   async getAllQuizzes(_req: Request, res: Response) {
     const quizzes = await this.service.getAllQuizzes();
-    res.status(statusCode.success).json({ data: quizzes });
+    return res
+      .status(statusCode.success)
+      .json(successResponse('Quizzes fetched successfully', quizzes));
   }
 
   /**
@@ -58,7 +60,9 @@ export class QuizController {
   async getQuizById(req: Request, res: Response) {
     const id = req.params.id as string;
     const quiz = await this.service.getQuizById(id);
-    res.status(statusCode.success).json({ data: quiz });
+    return res
+      .status(statusCode.success)
+      .json(successResponse('Quiz fetched successfully', quiz));
   }
 
   /**
@@ -70,9 +74,9 @@ export class QuizController {
     const quizId = req.params.quizId as string;
     const payload = req.body as AddQuestionDto;
     const question = await this.service.addQuestionToQuiz(quizId, payload);
-    res
+    return res
       .status(statusCode.created)
-      .json({ message: 'Question added', data: question });
+      .json(successResponse('Question added', question));
   }
 
   /**
@@ -84,8 +88,8 @@ export class QuizController {
     const questionId = req.params.questionId as string;
     const payload = req.body as AddOptionsDto[];
     const result = await this.service.addOptionToQuestion(questionId, payload);
-    res
+    return res
       .status(statusCode.created)
-      .json({ message: 'Options added', data: result });
+      .json(successResponse('Options added', result));
   }
 }
