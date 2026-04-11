@@ -20,6 +20,7 @@ export const addOptionsSchema = z.object({
   isCorrect: z.boolean().default(false),
 });
 
-export type CreateQuizDto = z.infer<typeof createQuizSchema>;
+export type CreateQuizInputDto = z.infer<typeof createQuizSchema>;
+export type CreateQuizDto = CreateQuizInputDto & { createdBy: string };
 export type AddQuestionDto = z.infer<typeof addQuestionSchema>;
 export type AddOptionsDto = z.infer<typeof addOptionsSchema>;

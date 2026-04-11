@@ -5,6 +5,7 @@ import { ERROR_CODES } from '@shared/utils/errors/index.js';
 import type { Request, Response } from 'express';
 import type {
   CreateQuizDto,
+  CreateQuizInputDto,
   AddQuestionDto,
   AddOptionsDto,
 } from './quiz.schema.js';
@@ -18,8 +19,8 @@ export class QuizController {
       throw new ApiError(statusCode.unauthorized, ERROR_CODES.UNAUTHORIZED);
     }
 
-    const payload = req.body as CreateQuizDto;
-    const quizData = {
+    const payload = req.body as CreateQuizInputDto;
+    const quizData: CreateQuizDto = {
       ...payload,
       createdBy: userId,
     };

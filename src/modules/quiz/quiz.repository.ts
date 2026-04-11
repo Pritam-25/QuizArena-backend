@@ -24,6 +24,7 @@ export class QuizRepository {
         id: true,
         title: true,
         description: true,
+        createdBy: true,
         createdAt: true,
         _count: {
           select: { questions: true },

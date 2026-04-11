@@ -6,7 +6,6 @@ import type {
   CreateQuizDto,
 } from './quiz.schema.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
-import { ERROR_MESSAGES } from '@shared/utils/errors/errorMessages.js';
 import { ERROR_CODES } from '@shared/utils/errors/errorCodes.js';
 import { QuestionType } from '@generated/prisma/enums.js';
 
