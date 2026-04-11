@@ -25,7 +25,7 @@ export const validateSchema =
       const sanitizedPath = req.baseUrl + req.path;
 
       result.error.issues.forEach(issue => {
-        const field = issue.path.join('.');
+        const field = issue.path.length ? issue.path.join('.') : 'body';
         if (!errors[field]) {
           errors[field] = issue.message;
         }
