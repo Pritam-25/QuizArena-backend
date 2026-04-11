@@ -1,13 +1,14 @@
 import type { Request, Response } from 'express';
 import { UserService } from './user.service.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
+import type { CreateUserDto } from './user.schema.js';
 
 export class UserController {
   constructor(private service: UserService) {}
 
   async createUser(req: Request, res: Response) {
-    const { username } = req.body;
-    const user = await this.service.createUser(username);
+    const payload = req.body as CreateUserDto;
+    const user = await this.service.createUser(payload);
     res
       .status(statusCode.created)
       .json({ message: 'User created', data: user });

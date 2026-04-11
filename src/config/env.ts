@@ -9,6 +9,7 @@ export const env = createEnv({
       .enum(['development', 'production', 'test'])
       .default('development'),
     DATABASE_URL: z.url(),
+    JWT_SECRET: z.string().min(1),
     SERVICE_NAME: z.string().default('quiz-arena-api'),
     OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
     OTEL_DEBUG: z.enum(['true', 'false']).default('false'),

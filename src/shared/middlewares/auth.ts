@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { ApiError } from '@shared/utils/errors/apiError.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
 import { ERROR_CODES } from '@shared/utils/errors/errorCodes.js';
+import { env } from '@config/env.js';
 
 type JwtPayload = {
   userId: string;
@@ -20,18 +21,13 @@ export const authMiddleware = (
   }
 
   const token = authHeader.slice(7).trim();
-  const jwtSecret = process.env.JWT_SECRET;
 
   if (!token) {
     throw new ApiError(statusCode.unauthorized, ERROR_CODES.INVALID_TOKEN);
   }
 
-  if (!jwtSecret) {
-    throw new ApiError(statusCode.internalError, ERROR_CODES.INTERNAL_ERROR);
-  }
-
   try {
-    const decoded = jwt.verify(token, jwtSecret);
+    const decoded = jwt.verify(token, env.JWT_SECRET);
 
     if (
       typeof decoded !== 'object' ||
