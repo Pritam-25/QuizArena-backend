@@ -4,6 +4,7 @@ import { ApiError } from '@shared/utils/errors/apiError.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
 import { ERROR_CODES } from '@shared/utils/errors/errorCodes.js';
 import { env } from '@config/env.js';
+import { AUTH_COOKIE_NAME } from '@modules/auth/auth.constants.js';
 
 type JwtPayload = {
   userId: string;
@@ -14,16 +15,16 @@ export const authMiddleware = (
   _res: Response,
   next: NextFunction
 ) => {
+  const tokenFromCookie = req.cookies?.[AUTH_COOKIE_NAME];
   const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next();
-  }
-
-  const token = authHeader.slice(7).trim();
+  const tokenFromHeader =
+    authHeader && authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7).trim()
+      : undefined;
+  const token = tokenFromCookie ?? tokenFromHeader;
 
   if (!token) {
-    throw new ApiError(statusCode.unauthorized, ERROR_CODES.INVALID_TOKEN);
+    return next();
   }
 
   try {
