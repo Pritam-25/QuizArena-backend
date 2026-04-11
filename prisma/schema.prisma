@@ -43,6 +43,8 @@ model Quiz {
   creator   User   @relation("UserQuizzes", fields: [createdBy], references: [id])
 
   questions Question[]
+
+  @@index([createdBy])
 }
 
 model Question {
@@ -68,4 +70,6 @@ model Option {
 
   questionId String
   question   Question @relation(fields: [questionId], references: [id])
+
+  @@index([questionId])
 }
