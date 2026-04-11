@@ -1,0 +1,17 @@
+@apiV1 = http://localhost:4000/api/v1
+@userBase = {{apiV1}}/users
+
+###
+# Create user (POST /api/v1/users)
+POST {{userBase}}
+Content-Type: application/json
+
+{
+  "username": "pritam"
+}
+
+###
+# Get user by id (GET /api/v1/users/:id)
+# Replace with an existing user id from create response
+@userId = REPLACE_USER_ID
+GET {{userBase}}/{{userId}}

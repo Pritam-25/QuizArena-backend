@@ -1,0 +1,63 @@
+@apiV1 = http://localhost:4000/api/v1
+@quizBase = {{apiV1}}/quizzes
+@authToken = REPLACE_JWT_TOKEN
+
+###
+# Create quiz (POST /api/v1/quizzes) - protected
+POST {{quizBase}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+	"title": "Current Affairs Quiz",
+	"description": "Mixed category quiz"
+}
+
+###
+# Get all quizzes (GET /api/v1/quizzes) - public
+GET {{quizBase}}
+
+###
+# Get quiz by id (GET /api/v1/quizzes/:id) - public
+@quizId = REPLACE_QUIZ_ID
+GET {{quizBase}}/{{quizId}}
+
+###
+# Add question to quiz (POST /api/v1/quizzes/:quizId/questions) - protected
+POST {{quizBase}}/{{quizId}}/questions
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+	"questionText": "What is the capital of France?",
+	"type": "MCQ",
+	"timeLimit": 30,
+	"points": 1,
+	"order": 1
+}
+
+###
+# Add options to question (POST /api/v1/quizzes/questions/:questionId/options) - protected
+@questionId = REPLACE_QUESTION_ID
+POST {{quizBase}}/questions/{{questionId}}/options
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+[
+	{
+		"optionText": "Paris",
+		"isCorrect": true
+	},
+	{
+		"optionText": "Berlin",
+		"isCorrect": false
+	},
+	{
+		"optionText": "Madrid",
+		"isCorrect": false
+	},
+	{
+		"optionText": "Rome",
+		"isCorrect": false
+	}
+]

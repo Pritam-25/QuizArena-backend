@@ -12,12 +12,58 @@ datasource db {
   provider = "postgresql"
 }
 
+enum QuestionType {
+  MCQ
+  TRUE_FALSE
+  MULTI_SELECT
+  FILL_IN_THE_BLANK
+}
+
 model User {
   id        String   @id @default(uuid())
-  username  String   
+  username  String
   email     String?  @unique
   password  String?
   isGuest   Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  quizzes Quiz[] @relation("UserQuizzes")
+}
+
+model Quiz {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy String
+  creator   User   @relation("UserQuizzes", fields: [createdBy], references: [id])
+
+  questions Question[]
+}
+
+model Question {
+  id           String       @id @default(uuid())
+  questionText String
+  type         QuestionType
+  timeLimit    Int
+  points       Int
+  order        Int
+
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id])
+
+  options Option[]
+}
+
+model Option {
+  id         String  @id @default(uuid())
+  optionText String
+  isCorrect  Boolean
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
 }

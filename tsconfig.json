@@ -36,6 +36,7 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": "./",
     "paths": {
+      "@app/*": ["src/app/*"],
       "@config/*": ["src/config/*"],
       "@shared/*": ["src/shared/*"],
       "@monitoring/*": ["src/monitoring/*"],
