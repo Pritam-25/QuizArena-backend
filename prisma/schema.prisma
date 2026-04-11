@@ -57,6 +57,8 @@ model Question {
   quiz   Quiz   @relation(fields: [quizId], references: [id])
 
   options Option[]
+
+  @@unique([quizId, order])
 }
 
 model Option {

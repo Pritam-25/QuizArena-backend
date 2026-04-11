@@ -16,7 +16,7 @@ export class QuizService {
     const { title, description, createdBy } = data;
     return this.repo.createQuiz({
       title,
-      description,
+      description: description ?? null,
       creator: { connect: { id: createdBy } },
     });
   }
@@ -47,22 +47,14 @@ export class QuizService {
   async addOptionToQuestion(questionId: string, data: AddOptionsDto[]) {
     const question = await this.repo.getQuestionById(questionId);
     if (!question) {
-      throw new ApiError(statusCode.notFound, ERROR_CODES.QUIZ_NOT_FOUND);
+      throw new ApiError(statusCode.notFound, ERROR_CODES.QUESTION_NOT_FOUND);
     }
 
     const correctOptionsCount = data.filter(opt => opt.isCorrect).length;
 
-    if (correctOptionsCount === 0) {
-      throw new ApiError(
-        statusCode.badRequest,
-        ERROR_CODES.INVALID_OPTIONS,
-        'At least one option must be marked as correct'
-      );
-    }
-
     switch (question.type) {
       case QuestionType.MCQ:
-        if (correctOptionsCount != 1) {
+        if (correctOptionsCount !== 1) {
           throw new ApiError(
             statusCode.badRequest,
             ERROR_CODES.INVALID_OPTIONS,
@@ -82,7 +74,7 @@ export class QuizService {
         break;
 
       case QuestionType.TRUE_FALSE:
-        if (data.length != 2 || correctOptionsCount != 1) {
+        if (data.length !== 2 || correctOptionsCount !== 1) {
           throw new ApiError(
             statusCode.badRequest,
             ERROR_CODES.INVALID_OPTIONS,
@@ -92,11 +84,14 @@ export class QuizService {
         break;
 
       case QuestionType.FILL_IN_THE_BLANK:
-        throw new ApiError(
-          statusCode.badRequest,
-          ERROR_CODES.NO_OPTIONS_ALLOWED,
-          'Options are not allowed for fill-in-the-blank questions'
-        );
+        if (data.length > 0 || correctOptionsCount > 0) {
+          throw new ApiError(
+            statusCode.badRequest,
+            ERROR_CODES.NO_OPTIONS_ALLOWED,
+            'Options are not allowed for fill-in-the-blank questions'
+          );
+        }
+        break;
 
       default:
         throw new ApiError(
