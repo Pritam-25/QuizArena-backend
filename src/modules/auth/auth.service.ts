@@ -4,6 +4,7 @@ import { ApiError } from '@shared/utils/errors/apiError.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
 import { ERROR_CODES } from '@shared/utils/errors/errorCodes.js';
 import { env } from '@config/env.js';
+import { Prisma } from '@generated/prisma/client.js';
 import type { LoginDto, RegisterDto } from './auth.schema.js';
 import { AuthRepository } from './auth.repository.js';
 import { toAuthResponseDto } from './auth.mapper.js';
@@ -25,11 +26,28 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const user = await this.repo.createUser({
-      username: data.username,
-      email: data.email,
-      password: hashedPassword,
-    });
+    let user;
+
+    try {
+      user = await this.repo.createUser({
+        username: data.username,
+        email: data.email,
+        password: hashedPassword,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ApiError(
+          statusCode.conflict,
+          ERROR_CODES.USER_ALREADY_EXISTS,
+          'Email already in use'
+        );
+      }
+
+      throw error;
+    }
 
     const token = this.generateToken(user.id);
 

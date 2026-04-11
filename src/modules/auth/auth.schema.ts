@@ -19,8 +19,8 @@ export const registerSchema = z.object({
       error: issue =>
         issue.input === undefined ? 'password is required' : undefined,
     })
-    .min(6)
-    .trim(),
+    .trim()
+    .min(6),
 });
 
 export const loginSchema = z.object({
@@ -35,8 +35,8 @@ export const loginSchema = z.object({
       error: issue =>
         issue.input === undefined ? 'password is required' : undefined,
     })
-    .min(1)
-    .trim(),
+    .trim()
+    .min(1),
 });
 
 export type RegisterDto = z.infer<typeof registerSchema>;
