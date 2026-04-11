@@ -10,6 +10,10 @@ import {
 import { validateSchema } from '@shared/middlewares/validateSchema.js';
 import { z } from 'zod';
 
+/**
+ * Quiz module routes.
+ * Mounted under /api/v1/quizzes.
+ */
 const router: Router = Router();
 
 const { controller: quizController } = createQuizModule();

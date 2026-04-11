@@ -11,8 +11,17 @@ import type {
 } from './quiz.schema.js';
 
 export class QuizController {
+  /**
+   * Creates controller instance for quiz HTTP handlers.
+   * @param service - Quiz service instance
+   */
   constructor(private service: QuizService) {}
 
+  /**
+   * Creates a quiz for the authenticated user.
+   * @param req - Express request
+   * @param res - Express response
+   */
   async createQuiz(req: Request, res: Response) {
     const userId = req.user?.id;
     if (!userId) {
@@ -31,17 +40,32 @@ export class QuizController {
       .json({ message: 'Quiz created', data: quiz });
   }
 
+  /**
+   * Fetches all quizzes.
+   * @param _req - Express request
+   * @param res - Express response
+   */
   async getAllQuizzes(_req: Request, res: Response) {
     const quizzes = await this.service.getAllQuizzes();
     res.status(statusCode.success).json({ data: quizzes });
   }
 
+  /**
+   * Fetches one quiz by id.
+   * @param req - Express request
+   * @param res - Express response
+   */
   async getQuizById(req: Request, res: Response) {
     const id = req.params.id as string;
     const quiz = await this.service.getQuizById(id);
     res.status(statusCode.success).json({ data: quiz });
   }
 
+  /**
+   * Adds a question to a quiz.
+   * @param req - Express request
+   * @param res - Express response
+   */
   async addQuestionToQuiz(req: Request, res: Response) {
     const quizId = req.params.quizId as string;
     const payload = req.body as AddQuestionDto;
@@ -51,6 +75,11 @@ export class QuizController {
       .json({ message: 'Question added', data: question });
   }
 
+  /**
+   * Adds options to a question.
+   * @param req - Express request
+   * @param res - Express response
+   */
   async addOptionToQuestion(req: Request, res: Response) {
     const questionId = req.params.questionId as string;
     const payload = req.body as AddOptionsDto[];

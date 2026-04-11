@@ -10,8 +10,17 @@ import { ERROR_CODES } from '@shared/utils/errors/errorCodes.js';
 import { QuestionType } from '@generated/prisma/enums.js';
 
 export class QuizService {
+  /**
+   * Creates service instance for quiz business logic.
+   * @param repo - Quiz repository instance
+   */
   constructor(private repo: QuizRepository) {}
 
+  /**
+   * Creates a quiz and links it to the creator.
+   * @param data - Quiz payload with creator id
+   * @returns Created quiz record
+   */
   async createQuiz(data: CreateQuizDto) {
     const { title, description, createdBy } = data;
     return this.repo.createQuiz({
@@ -21,10 +30,20 @@ export class QuizService {
     });
   }
 
+  /**
+   * Returns all quizzes.
+   * @returns List of quizzes
+   */
   async getAllQuizzes() {
     return this.repo.getAllQuizzes();
   }
 
+  /**
+   * Returns a quiz by id.
+   * @param id - Quiz ID
+   * @returns Quiz details with nested relations
+   * @throws ApiError when quiz is not found
+   */
   async getQuizById(id: string) {
     const quiz = await this.repo.getQuizById(id);
     if (!quiz)
@@ -32,6 +51,12 @@ export class QuizService {
     return quiz;
   }
 
+  /**
+   * Adds a question to a quiz.
+   * @param quizId - Quiz ID
+   * @param data - Question payload
+   * @returns Created question
+   */
   async addQuestionToQuiz(quizId: string, data: AddQuestionDto) {
     const { questionText, type, timeLimit, points, order } = data;
     return this.repo.addQuestionToQuiz(quizId, {
@@ -44,6 +69,13 @@ export class QuizService {
     });
   }
 
+  /**
+   * Adds options to a question with type-specific validation rules.
+   * @param questionId - Question ID
+   * @param data - Option payload array
+   * @returns Batch insert result
+   * @throws ApiError when question is missing or option rules are violated
+   */
   async addOptionToQuestion(questionId: string, data: AddOptionsDto[]) {
     const question = await this.repo.getQuestionById(questionId);
     if (!question) {

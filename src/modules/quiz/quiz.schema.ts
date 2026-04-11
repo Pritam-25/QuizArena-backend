@@ -1,12 +1,18 @@
 import { QuestionType } from '@generated/prisma/enums.js';
 import { z } from 'zod';
 
+/**
+ * Request body schema for creating a quiz.
+ */
 export const createQuizSchema = z.object({
   title: z.string().min(3).trim(),
   description: z.string().trim().optional(),
   isPublished: z.boolean().default(false),
 });
 
+/**
+ * Request body schema for adding a question to a quiz.
+ */
 export const addQuestionSchema = z.object({
   questionText: z.string().min(1).trim(),
   type: z.enum(QuestionType).default(QuestionType.MCQ),
@@ -15,12 +21,18 @@ export const addQuestionSchema = z.object({
   order: z.number().int().nonnegative(),
 });
 
+/**
+ * Request body schema for adding a single option.
+ */
 export const addOptionsSchema = z.object({
   optionText: z.string().min(1).max(200).trim(),
   isCorrect: z.boolean().default(false),
 });
 
 export type CreateQuizInputDto = z.infer<typeof createQuizSchema>;
+/**
+ * Service-layer quiz payload that includes creator identity.
+ */
 export type CreateQuizDto = CreateQuizInputDto & { createdBy: string };
 export type AddQuestionDto = z.infer<typeof addQuestionSchema>;
 export type AddOptionsDto = z.infer<typeof addOptionsSchema>;
