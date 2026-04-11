@@ -5,11 +5,20 @@ import { prisma } from '@infrastructure/database/prismaClient.js';
 
 const PORT = env.PORT;
 
-const server = app.listen(PORT, () => {
-  logger.info(
-    `Server started at http://localhost:${PORT}/api/v1 in ${env.NODE_ENV} mode`
-  );
-});
+const startServer = async () => {
+  await prisma.$connect();
+  logger.info('Prisma connected');
+
+  const server = app.listen(PORT, () => {
+    logger.info(
+      `Server started at http://localhost:${PORT}/api/v1 in ${env.NODE_ENV} mode`
+    );
+  });
+
+  return server;
+};
+
+const server = await startServer();
 
 let isShuttingDown = false;
 
