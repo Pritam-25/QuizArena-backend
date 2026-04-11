@@ -6,16 +6,26 @@ import { prisma } from '@infrastructure/database/prismaClient.js';
 const PORT = env.PORT;
 
 const startServer = async () => {
-  await prisma.$connect();
-  logger.info('Prisma connected');
+  try {
+    await prisma.$connect();
+    logger.info('Prisma connected');
 
-  const server = app.listen(PORT, () => {
-    logger.info(
-      `Server started at http://localhost:${PORT}/api/v1 in ${env.NODE_ENV} mode`
-    );
-  });
+    const server = app.listen(PORT, () => {
+      logger.info(
+        `Server started at http://localhost:${PORT}/api/v1 in ${env.NODE_ENV} mode`
+      );
+    });
 
-  return server;
+    server.on('error', error => {
+      logger.error({ err: error }, 'HTTP server failed during startup');
+      process.exit(1);
+    });
+
+    return server;
+  } catch (error) {
+    logger.error({ err: error }, 'Startup failed before server became ready');
+    process.exit(1);
+  }
 };
 
 const server = await startServer();
