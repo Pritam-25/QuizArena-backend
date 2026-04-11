@@ -10,7 +10,7 @@ import {
   requestLoggerMiddleware,
   traceIdHeaderMiddleware,
 } from '@shared/middlewares/index.js';
-import router from './routes.js';
+import router from '@app/api/v1/routes.js';
 
 const app: Application = express();
 
