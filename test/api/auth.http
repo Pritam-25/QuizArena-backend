@@ -1,0 +1,23 @@
+@apiV1 = http://localhost:4000/api/v1
+@authBase = {{apiV1}}/auth
+
+###
+# Register (POST /api/v1/auth/register)
+POST {{authBase}}/register
+Content-Type: application/json
+
+{
+  "username": "test_user_01",
+  "email": "test_user_01@example.com",
+  "password": "password123"
+}
+
+###
+# Login (POST /api/v1/auth/login)
+POST {{authBase}}/login
+Content-Type: application/json
+
+{
+  "email": "test_user_01@example.com",
+  "password": "password123"
+}

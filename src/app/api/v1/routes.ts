@@ -4,6 +4,7 @@ import client from 'prom-client';
 import { statusCode, successResponse } from '@shared/utils/http/index.js';
 import userRoutes from '@modules/user/user.routes.js';
 import quizRoutes from '@modules/quiz/quiz.routes.js';
+import authRoutes from '@modules/auth/auth.routes.js';
 
 const router: Router = Router();
 
@@ -44,6 +45,7 @@ router.get('/', (_req: Request, res: Response) => {
 });
 
 router.use('/users', userRoutes);
+router.use('/auth', authRoutes);
 router.use('/quizzes', quizRoutes);
 
 export default router;
