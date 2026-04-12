@@ -1,13 +1,14 @@
-import { ApiError } from '@shared/utils/errors/apiError.js';
 import type { QuizService } from './quiz.service.js';
 import { statusCode, successResponse } from '@shared/utils/http/index.js';
-import { ERROR_CODES } from '@shared/utils/errors/index.js';
+import { getRequiredUserId } from '@shared/utils/context/index.js';
 import type { Request, Response } from 'express';
 import type {
   CreateQuizDto,
   CreateQuizInputDto,
+  AddQuestionInputDto,
   AddQuestionDto,
   AddOptionsDto,
+  ReorderQuestionDto,
 } from './quiz.schema.js';
 
 export class QuizController {
@@ -23,10 +24,7 @@ export class QuizController {
    * @param res - Express response
    */
   async createQuiz(req: Request, res: Response) {
-    const userId = req.user?.id;
-    if (!userId) {
-      throw new ApiError(statusCode.unauthorized, ERROR_CODES.UNAUTHORIZED);
-    }
+    const userId = getRequiredUserId(req);
 
     const payload = req.body as CreateQuizInputDto;
     const quizData: CreateQuizDto = {
@@ -71,9 +69,19 @@ export class QuizController {
    * @param res - Express response
    */
   async addQuestionToQuiz(req: Request, res: Response) {
+    const userId = getRequiredUserId(req);
+
     const quizId = req.params.quizId as string;
     const payload = req.body as AddQuestionDto;
-    const question = await this.service.addQuestionToQuiz(quizId, payload);
+    const { prevOrder, nextOrder, ...questionPayload } = payload;
+
+    const question = await this.service.addQuestionToQuiz(
+      quizId,
+      questionPayload as AddQuestionInputDto,
+      userId,
+      prevOrder,
+      nextOrder
+    );
     return res
       .status(statusCode.created)
       .json(successResponse('Question added', question));
@@ -85,11 +93,41 @@ export class QuizController {
    * @param res - Express response
    */
   async addOptionToQuestion(req: Request, res: Response) {
+    const userId = getRequiredUserId(req);
+
     const questionId = req.params.questionId as string;
     const payload = req.body as AddOptionsDto[];
-    const result = await this.service.addOptionToQuestion(questionId, payload);
+    const result = await this.service.addOptionToQuestion(
+      questionId,
+      payload,
+      userId
+    );
     return res
       .status(statusCode.created)
       .json(successResponse('Options added', result));
+  }
+
+  /**
+   * Reorders a question inside a quiz.
+   * @param req - Express request
+   * @param res - Express response
+   */
+  async reorderQuestion(req: Request, res: Response) {
+    const userId = getRequiredUserId(req);
+
+    const quizId = req.params.quizId as string;
+    const questionId = req.params.questionId as string;
+    const payload = req.body as ReorderQuestionDto;
+
+    const question = await this.service.reorderQuestionInQuiz(
+      quizId,
+      questionId,
+      userId,
+      payload
+    );
+
+    return res
+      .status(statusCode.success)
+      .json(successResponse('Question reordered', question));
   }
 }

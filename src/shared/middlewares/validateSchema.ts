@@ -2,8 +2,7 @@ import type { ZodType } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
 import { errorResponse } from '@shared/utils/http/apiResponses.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
-import { ERROR_CODES } from '@shared/utils/errors/index.js';
-import { ApiError } from '@shared/utils/errors/apiError.js';
+import { ApiError, ERROR_CODES } from '@shared/utils/errors/index.js';
 import logger from '@infrastructure/logger/logger.js';
 
 export const validateSchema =

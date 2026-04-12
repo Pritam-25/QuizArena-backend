@@ -1,13 +1,20 @@
-import { ApiError } from '@shared/utils/errors/apiError.js';
+import {
+  ApiError,
+  ERROR_CODES,
+  isUniqueConstraintError,
+} from '@shared/utils/errors/index.js';
 import { QuizRepository } from './quiz.repository.js';
 import type {
   AddOptionsDto,
-  AddQuestionDto,
+  AddQuestionInputDto,
   CreateQuizDto,
+  ReorderQuestionDto,
 } from './quiz.schema.js';
+import type { QuizDetailsResponseDto } from './quiz.dto.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
-import { ERROR_CODES } from '@shared/utils/errors/errorCodes.js';
-import { QuestionType } from '@generated/prisma/enums.js';
+import { validateQuestionOptions } from './utils/validateQuestionOptions.js';
+import { resolveQuestionOrder } from './utils/resolveQuestionOrder.js';
+import { toQuizDetailsResponseDto } from './quiz.mapper.js';
 
 export class QuizService {
   /**
@@ -15,6 +22,62 @@ export class QuizService {
    * @param repo - Quiz repository instance
    */
   constructor(private repo: QuizRepository) {}
+
+  /**
+   * Ensures a quiz exists and is owned by the authenticated user.
+   * @param quizId - Quiz ID
+   * @param userId - Authenticated user ID
+   * @throws ApiError when quiz is missing or forbidden
+   */
+  private async assertQuizOwnership(quizId: string, userId: string) {
+    const quiz = await this.repo.findQuizById(quizId);
+
+    if (!quiz) {
+      throw new ApiError(statusCode.notFound, ERROR_CODES.QUIZ_NOT_FOUND);
+    }
+
+    if (quiz.createdBy !== userId) {
+      throw new ApiError(statusCode.forbidden, ERROR_CODES.FORBIDDEN);
+    }
+  }
+
+  /**
+   * Resolves a fractional order key and retries once on unique-order race.
+   * @param params - Quiz/order anchors and callback that applies the resolved key
+   * @returns Callback result after successful order resolution
+   */
+  private async executeWithResolvedOrderRetry<T>(params: {
+    quizId: string;
+    prevOrder: string | undefined;
+    nextOrder: string | undefined;
+    execute: (order: string) => Promise<T>;
+  }): Promise<T> {
+    const { quizId, prevOrder, nextOrder, execute } = params;
+    const maxAttempts = 2;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      try {
+        const order = await resolveQuestionOrder({
+          quizId,
+          getLastQuestionOrder: targetQuizId =>
+            this.repo.getLastQuestionOrder(targetQuizId),
+          ...(prevOrder ? { prevOrder } : {}),
+          ...(nextOrder ? { nextOrder } : {}),
+        });
+
+        return await execute(order);
+      } catch (error) {
+        if (!isUniqueConstraintError(error)) {
+          throw error;
+        }
+      }
+    }
+
+    throw new ApiError(
+      statusCode.badRequest,
+      ERROR_CODES.DUPLICATE_QUESTION_ORDER
+    );
+  }
 
   /**
    * Creates a quiz and links it to the creator.
@@ -26,7 +89,7 @@ export class QuizService {
     return this.repo.createQuiz({
       title,
       description: description ?? null,
-      creator: { connect: { id: createdBy } },
+      createdBy,
     });
   }
 
@@ -44,28 +107,41 @@ export class QuizService {
    * @returns Quiz details with nested relations
    * @throws ApiError when quiz is not found
    */
-  async getQuizById(id: string) {
+  async getQuizById(id: string): Promise<QuizDetailsResponseDto> {
     const quiz = await this.repo.getQuizById(id);
     if (!quiz)
       throw new ApiError(statusCode.notFound, ERROR_CODES.QUIZ_NOT_FOUND);
-    return quiz;
+
+    return toQuizDetailsResponseDto(quiz);
   }
 
   /**
    * Adds a question to a quiz.
    * @param quizId - Quiz ID
    * @param data - Question payload
+   * @param userId - Authenticated user ID
    * @returns Created question
+   * @throws ApiError when quiz is missing, forbidden, or order conflicts
    */
-  async addQuestionToQuiz(quizId: string, data: AddQuestionDto) {
-    const { questionText, type, timeLimit, points, order } = data;
-    return this.repo.addQuestionToQuiz(quizId, {
-      questionText,
-      type,
-      timeLimit,
-      points,
-      order,
-      quiz: { connect: { id: quizId } },
+  async addQuestionToQuiz(
+    quizId: string,
+    data: AddQuestionInputDto,
+    userId: string,
+    prevOrder?: string,
+    nextOrder?: string
+  ) {
+    await this.assertQuizOwnership(quizId, userId);
+
+    return this.executeWithResolvedOrderRetry({
+      quizId,
+      prevOrder,
+      nextOrder,
+      execute: order =>
+        this.repo.createQuestion({
+          ...data,
+          quizId,
+          order,
+        }),
     });
   }
 
@@ -73,66 +149,69 @@ export class QuizService {
    * Adds options to a question with type-specific validation rules.
    * @param questionId - Question ID
    * @param data - Option payload array
+   * @param userId - Authenticated user ID
    * @returns Batch insert result
-   * @throws ApiError when question is missing or option rules are violated
+   * @throws ApiError when question is missing, forbidden, or option rules are violated
    */
-  async addOptionToQuestion(questionId: string, data: AddOptionsDto[]) {
+  async addOptionToQuestion(
+    questionId: string,
+    data: AddOptionsDto[],
+    userId: string
+  ) {
     const question = await this.repo.getQuestionById(questionId);
     if (!question) {
       throw new ApiError(statusCode.notFound, ERROR_CODES.QUESTION_NOT_FOUND);
     }
 
-    const correctOptionsCount = data.filter(opt => opt.isCorrect).length;
-
-    switch (question.type) {
-      case QuestionType.MCQ:
-        if (correctOptionsCount !== 1) {
-          throw new ApiError(
-            statusCode.badRequest,
-            ERROR_CODES.INVALID_OPTIONS,
-            'MCQ questions must have exactly one correct option'
-          );
-        }
-        break;
-
-      case QuestionType.MULTI_SELECT:
-        if (correctOptionsCount < 1) {
-          throw new ApiError(
-            statusCode.badRequest,
-            ERROR_CODES.INVALID_OPTIONS,
-            'Multi-select questions must have at least one correct option'
-          );
-        }
-        break;
-
-      case QuestionType.TRUE_FALSE:
-        if (data.length !== 2 || correctOptionsCount !== 1) {
-          throw new ApiError(
-            statusCode.badRequest,
-            ERROR_CODES.INVALID_OPTIONS,
-            'True/False questions must have exactly two options with one correct'
-          );
-        }
-        break;
-
-      case QuestionType.FILL_IN_THE_BLANK:
-        if (data.length > 0 || correctOptionsCount > 0) {
-          throw new ApiError(
-            statusCode.badRequest,
-            ERROR_CODES.NO_OPTIONS_ALLOWED,
-            'Options are not allowed for fill-in-the-blank questions'
-          );
-        }
-        break;
-
-      default:
-        throw new ApiError(
-          statusCode.badRequest,
-          ERROR_CODES.INVALID_OPTIONS,
-          'Invalid question type'
-        );
+    if (question.quiz.createdBy !== userId) {
+      throw new ApiError(statusCode.forbidden, ERROR_CODES.FORBIDDEN);
     }
 
-    return this.repo.addOptionToQuestion(questionId, data);
+    validateQuestionOptions(question.type, data);
+
+    try {
+      return await this.repo.addOptionToQuestion(questionId, data);
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new ApiError(
+          statusCode.badRequest,
+          ERROR_CODES.DUPLICATE_OPTIONS
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Reorders a question within a quiz using fractional anchors.
+   * @param quizId - Quiz ID
+   * @param questionId - Question ID
+   * @param userId - Authenticated user ID
+   * @param anchors - Reorder anchors (prevOrder/nextOrder)
+   * @returns Updated question
+   * @throws ApiError when quiz/question is missing, forbidden, or order conflicts
+   */
+  async reorderQuestionInQuiz(
+    quizId: string,
+    questionId: string,
+    userId: string,
+    anchors: ReorderQuestionDto
+  ) {
+    await this.assertQuizOwnership(quizId, userId);
+
+    const question = await this.repo.getQuestionForReorder(questionId, quizId);
+    if (!question) {
+      throw new ApiError(statusCode.notFound, ERROR_CODES.QUESTION_NOT_FOUND);
+    }
+
+    const { prevOrder, nextOrder } = anchors;
+
+    return this.executeWithResolvedOrderRetry({
+      quizId,
+      prevOrder,
+      nextOrder,
+      execute: order => this.repo.updateQuestionOrder(question.id, order),
+    });
   }
 }

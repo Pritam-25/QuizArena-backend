@@ -1,10 +1,12 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { ApiError } from '@shared/utils/errors/apiError.js';
+import {
+  ApiError,
+  ERROR_CODES,
+  isUniqueConstraintError,
+} from '@shared/utils/errors/index.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
-import { ERROR_CODES } from '@shared/utils/errors/errorCodes.js';
 import { env } from '@config/env.js';
-import { Prisma } from '@generated/prisma/client.js';
 import type { LoginDto, RegisterDto } from './auth.schema.js';
 import { AuthRepository } from './auth.repository.js';
 import { toAuthResponseDto } from './auth.mapper.js';
@@ -51,10 +53,7 @@ export class AuthService {
         password: hashedPassword,
       });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
+      if (isUniqueConstraintError(error)) {
         throw new ApiError(
           statusCode.conflict,
           ERROR_CODES.USER_ALREADY_EXISTS,

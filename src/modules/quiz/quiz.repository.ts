@@ -4,10 +4,10 @@ import { prisma } from '@infrastructure/database/prismaClient.js';
 export class QuizRepository {
   /**
    * Creates a new quiz.
-   * @param data - Prisma QuizCreateInput (includes title, description, creator relation)
+   * @param data - Prisma QuizUncheckedCreateInput (includes title, description, createdBy)
    * @returns The created Quiz record
    */
-  async createQuiz(data: Prisma.QuizCreateInput) {
+  async createQuiz(data: Prisma.QuizUncheckedCreateInput) {
     return prisma.quiz.create({
       data,
     });
@@ -52,33 +52,94 @@ export class QuizRepository {
   }
 
   /**
-   * Fetch a single question with its options.
-   * @param id - Question ID
-   * @returns Question with options or null if not found
+   * Fetch quiz ownership metadata.
+   * @param id - Quiz ID
+   * @returns Quiz id and creator id or null if not found
    */
-  async getQuestionById(id: string) {
-    return prisma.question.findUnique({
+  async findQuizById(id: string) {
+    return prisma.quiz.findUnique({
       where: { id },
-      include: { options: true },
+      select: {
+        id: true,
+        createdBy: true,
+      },
     });
   }
 
   /**
-   * Adds a question to a quiz.
-   * Automatically connects the question to the given quizId.
-   * @param quizId - ID of the quiz
-   * @param questionData - Prisma QuestionCreateInput (without quiz relation)
+   * Fetches the highest current order key for a quiz.
+   * @param quizId - Quiz ID
+   * @returns Last order key or null if quiz has no questions
+   */
+  async getLastQuestionOrder(quizId: string) {
+    return prisma.question.findFirst({
+      where: { quizId },
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    });
+  }
+
+  /**
+   * Fetch question metadata required for add-option validation and ownership checks.
+   * @param id - Question ID
+   * @returns Question type and parent quiz creator id or null if not found
+   */
+  async getQuestionById(id: string) {
+    return prisma.question.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        type: true,
+        quiz: {
+          select: {
+            createdBy: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Fetch question metadata needed for reorder operations.
+   * @param questionId - Question ID
+   * @param quizId - Quiz ID
+   * @returns Question id/order/quizId or null if not found in the quiz
+   */
+  async getQuestionForReorder(questionId: string, quizId: string) {
+    return prisma.question.findFirst({
+      where: {
+        id: questionId,
+        quizId,
+      },
+      select: {
+        id: true,
+        quizId: true,
+        order: true,
+      },
+    });
+  }
+
+  /**
+   * Creates a question row.
+   * @param data - Prisma QuestionUncheckedCreateInput
    * @returns Created Question
    */
-  async addQuestionToQuiz(
-    quizId: string,
-    questionData: Prisma.QuestionCreateInput
-  ) {
+  async createQuestion(data: Prisma.QuestionUncheckedCreateInput) {
     return prisma.question.create({
-      data: {
-        ...questionData,
-        quiz: { connect: { id: quizId } },
-      },
+      data,
+    });
+  }
+
+  /**
+   * Updates the order key of a question.
+   * @param questionId - Question ID
+   * @param order - New fractional order key
+   * @returns Updated question
+   */
+  async updateQuestionOrder(questionId: string, order: string) {
+    return prisma.question.update({
+      where: { id: questionId },
+      data: { order },
     });
   }
 
