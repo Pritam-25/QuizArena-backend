@@ -1,0 +1,501 @@
+{
+  "info": {
+    "_postman_id": "e3d349d5-8f5a-48f9-8afd-42d2ce65a2f6",
+    "name": "Live Quiz API E2E",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Register Owner",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{ownerUsername}}\",\n  \"email\": \"{{ownerEmail}}\",\n  \"password\": \"{{ownerPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "register"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Register status is 201 or 409', function () {",
+              "  pm.expect([201, 409]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test('Register response shape is valid', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.have.property('success');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - Login Owner",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{ownerEmail}}\",\n  \"password\": \"{{ownerPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Save owner user id', function () {",
+              "  const body = pm.response.json();",
+              "  const ownerUserId = body && body.data && body.data.user && body.data.user.id;",
+              "  pm.expect(ownerUserId).to.be.a('string').and.not.empty;",
+              "  pm.environment.set('ownerUserId', ownerUserId);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quiz - Create Quiz",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{quizTitle}}\",\n  \"description\": \"{{quizDescription}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/quizzes",
+          "host": ["{{baseUrl}}"],
+          "path": ["quizzes"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Create quiz status is 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Save quiz id', function () {",
+              "  const body = pm.response.json();",
+              "  const quizId = body && body.data && body.data.id;",
+              "  pm.expect(quizId).to.be.a('string').and.not.empty;",
+              "  pm.environment.set('quizId', quizId);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quiz - Add Question 1",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"questionText\": \"{{question1Text}}\",\n  \"type\": \"MCQ\",\n  \"timeLimit\": 30,\n  \"points\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/quizzes/{{quizId}}/questions",
+          "host": ["{{baseUrl}}"],
+          "path": ["quizzes", "{{quizId}}", "questions"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Add question 1 status is 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Save question 1 id and order', function () {",
+              "  const body = pm.response.json();",
+              "  const id = body && body.data && body.data.id;",
+              "  const order = body && body.data && body.data.order;",
+              "  pm.expect(id).to.be.a('string').and.not.empty;",
+              "  pm.expect(order).to.be.a('string').and.not.empty;",
+              "  pm.environment.set('q1Id', id);",
+              "  pm.environment.set('q1Order', order);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quiz - Add Question 2 (After Q1)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"questionText\": \"{{question2Text}}\",\n  \"type\": \"MCQ\",\n  \"timeLimit\": 30,\n  \"points\": 1,\n  \"prevOrder\": \"{{q1Order}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/quizzes/{{quizId}}/questions",
+          "host": ["{{baseUrl}}"],
+          "path": ["quizzes", "{{quizId}}", "questions"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Add question 2 status is 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Save question 2 id and order', function () {",
+              "  const body = pm.response.json();",
+              "  const id = body && body.data && body.data.id;",
+              "  const order = body && body.data && body.data.order;",
+              "  pm.expect(id).to.be.a('string').and.not.empty;",
+              "  pm.expect(order).to.be.a('string').and.not.empty;",
+              "  pm.environment.set('q2Id', id);",
+              "  pm.environment.set('q2Order', order);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quiz - Add Options to Q1",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "[\n  { \"optionText\": \"Paris\", \"isCorrect\": true },\n  { \"optionText\": \"Berlin\", \"isCorrect\": false },\n  { \"optionText\": \"Madrid\", \"isCorrect\": false },\n  { \"optionText\": \"Rome\", \"isCorrect\": false }\n]"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/quizzes/questions/{{q1Id}}/options",
+          "host": ["{{baseUrl}}"],
+          "path": ["quizzes", "questions", "{{q1Id}}", "options"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Add options status is 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Add options inserted count is present', function () {",
+              "  const body = pm.response.json();",
+              "  const count = body && body.data && body.data.count;",
+              "  pm.expect(count).to.be.a('number');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quiz - Reorder Q2 Before Q1",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nextOrder\": \"{{q1Order}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/quizzes/{{quizId}}/questions/{{q2Id}}/reorder",
+          "host": ["{{baseUrl}}"],
+          "path": ["quizzes", "{{quizId}}", "questions", "{{q2Id}}", "reorder"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Reorder status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Save question 2 new order', function () {",
+              "  const body = pm.response.json();",
+              "  const order = body && body.data && body.data.order;",
+              "  pm.expect(order).to.be.a('string').and.not.empty;",
+              "  pm.environment.set('q2OrderAfterReorder', order);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quiz - Get Quiz By Id",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/quizzes/{{quizId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["quizzes", "{{quizId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Get quiz status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Get quiz has questions array', function () {",
+              "  const body = pm.response.json();",
+              "  const questions = body && body.data && body.data.questions;",
+              "  pm.expect(questions).to.be.an('array');",
+              "  pm.expect(questions.length).to.be.greaterThan(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Session - Create Session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"quizId\": \"{{quizId}}\",\n  \"hostId\": \"{{ownerUserId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/sessions",
+          "host": ["{{baseUrl}}"],
+          "path": ["sessions"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Create session status is 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Save session id and join code', function () {",
+              "  const body = pm.response.json();",
+              "  const sessionId = body && body.data && body.data.id;",
+              "  const joinCode = body && body.data && body.data.joinCode;",
+              "  pm.expect(sessionId).to.be.a('string').and.not.empty;",
+              "  pm.expect(joinCode).to.be.a('string').and.not.empty;",
+              "  pm.environment.set('sessionId', sessionId);",
+              "  pm.environment.set('sessionJoinCode', joinCode);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Session - Get Session By Id",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/sessions/{{sessionId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["sessions", "{{sessionId}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Get session status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Session - Join Session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"joinCode\": \"{{sessionJoinCode}}\",\n  \"nickname\": \"{{participantNickname}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/sessions/join",
+          "host": ["{{baseUrl}}"],
+          "path": ["sessions", "join"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Join session status is 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Save participant id', function () {",
+              "  const body = pm.response.json();",
+              "  const participantId = body && body.data && body.data.participant && body.data.participant.id;",
+              "  pm.expect(participantId).to.be.a('string').and.not.empty;",
+              "  pm.environment.set('participantId', participantId);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Session - Start Session",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{baseUrl}}/sessions/{{sessionId}}/start",
+          "host": ["{{baseUrl}}"],
+          "path": ["sessions", "{{sessionId}}", "start"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Start session status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000/api/v1"
+    },
+    {
+      "key": "ownerUsername",
+      "value": "owner_user_1"
+    },
+    {
+      "key": "ownerEmail",
+      "value": "owner_user_1@example.com"
+    },
+    {
+      "key": "ownerPassword",
+      "value": "password123"
+    },
+    {
+      "key": "quizTitle",
+      "value": "Postman E2E Quiz"
+    },
+    {
+      "key": "quizDescription",
+      "value": "Validate quiz ordering and auth behavior"
+    },
+    {
+      "key": "question1Text",
+      "value": "What is the capital of France?"
+    },
+    {
+      "key": "question2Text",
+      "value": "What is the capital of Japan?"
+    },
+    {
+      "key": "participantNickname",
+      "value": "player_one"
+    }
+  ]
+}
