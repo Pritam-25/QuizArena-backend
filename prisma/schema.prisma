@@ -85,7 +85,7 @@ model Option {
 }
 
 model Session {
-  id String @id @default(cuid())
+  id String @id @default(uuid())
 
   joinCode String        @unique
   status   SessionStatus @default(WAITING)
@@ -106,7 +106,7 @@ model Session {
 }
 
 model Participant {
-  id String @id @default(cuid())
+  id String @id @default(uuid())
 
   sessionId String
   session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
