@@ -46,19 +46,22 @@ export const addQuestionSchema = z
  */
 export const reorderQuestionSchema = z
   .object({
-    prevOrder: fractionalOrderSchema.optional(),
-    nextOrder: fractionalOrderSchema.optional(),
+    prevReorderToken: fractionalOrderSchema.optional(),
+    nextReorderToken: fractionalOrderSchema.optional(),
   })
-  .refine(data => !!data.prevOrder || !!data.nextOrder, {
-    path: ['prevOrder'],
-    message: 'Either prevOrder or nextOrder is required',
+  .refine(data => !!data.prevReorderToken || !!data.nextReorderToken, {
+    path: ['prevReorderToken'],
+    message: 'Either prevReorderToken or nextReorderToken is required',
   })
   .refine(
     data =>
-      !data.prevOrder || !data.nextOrder || data.prevOrder < data.nextOrder,
+      !data.prevReorderToken ||
+      !data.nextReorderToken ||
+      data.prevReorderToken < data.nextReorderToken,
     {
-      path: ['prevOrder'],
-      message: 'prevOrder must be lexicographically less than nextOrder',
+      path: ['prevReorderToken'],
+      message:
+        'prevReorderToken must be lexicographically less than nextReorderToken',
     }
   );
 

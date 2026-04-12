@@ -49,6 +49,7 @@ export function toQuizDetailsResponseDto(
       type: question.type,
       timeLimit: question.timeLimit,
       points: question.points,
+      reorderToken: question.order,
       index: index + 1,
       options: question.options.map(option => ({
         id: option.id,

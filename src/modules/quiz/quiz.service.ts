@@ -188,7 +188,7 @@ export class QuizService {
    * @param quizId - Quiz ID
    * @param questionId - Question ID
    * @param userId - Authenticated user ID
-   * @param anchors - Reorder anchors (prevOrder/nextOrder)
+   * @param anchors - Reorder anchors (prevReorderToken/nextReorderToken)
    * @returns Updated question
    * @throws ApiError when quiz/question is missing, forbidden, or order conflicts
    */
@@ -205,12 +205,12 @@ export class QuizService {
       throw new ApiError(statusCode.notFound, ERROR_CODES.QUESTION_NOT_FOUND);
     }
 
-    const { prevOrder, nextOrder } = anchors;
+    const { prevReorderToken, nextReorderToken } = anchors;
 
     return this.executeWithResolvedOrderRetry({
       quizId,
-      prevOrder,
-      nextOrder,
+      prevOrder: prevReorderToken,
+      nextOrder: nextReorderToken,
       execute: order => this.repo.updateQuestionOrder(question.id, order),
     });
   }

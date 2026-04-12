@@ -11,6 +11,7 @@ export type QuizQuestionResponseDto = {
   type: QuestionType;
   timeLimit: number;
   points: number;
+  reorderToken: string;
   index: number;
   options: QuizOptionResponseDto[];
 };

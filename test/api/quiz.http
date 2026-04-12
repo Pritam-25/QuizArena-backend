@@ -68,6 +68,6 @@ Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-	"prevOrder": "am",
-	"nextOrder": "an"
+	"prevReorderToken": "am",
+	"nextReorderToken": "an"
 }
