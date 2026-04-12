@@ -42,6 +42,61 @@ export class QuizService {
   }
 
   /**
+   * Refreshes order anchors from latest quiz state to avoid stale-boundary retries.
+   * @param quizId - Quiz ID
+   * @param prevOrder - Current previous bound
+   * @param nextOrder - Current next bound
+   * @returns Updated bounds for the next resolve attempt
+   */
+  private async refreshRetryAnchors(
+    quizId: string,
+    prevOrder: string | undefined,
+    nextOrder: string | undefined
+  ) {
+    if (prevOrder && nextOrder) {
+      const nearestAfterPrev = await this.repo.getNearestQuestionOrderAfter(
+        quizId,
+        prevOrder,
+        nextOrder
+      );
+
+      return {
+        prevOrder,
+        nextOrder: nearestAfterPrev?.order ?? nextOrder,
+      };
+    }
+
+    if (prevOrder && !nextOrder) {
+      const nearestAfterPrev = await this.repo.getNearestQuestionOrderAfter(
+        quizId,
+        prevOrder
+      );
+
+      return {
+        prevOrder,
+        nextOrder: nearestAfterPrev?.order,
+      };
+    }
+
+    if (!prevOrder && nextOrder) {
+      const nearestBeforeNext = await this.repo.getNearestQuestionOrderBefore(
+        quizId,
+        nextOrder
+      );
+
+      return {
+        prevOrder: nearestBeforeNext?.order,
+        nextOrder,
+      };
+    }
+
+    return {
+      prevOrder,
+      nextOrder,
+    };
+  }
+
+  /**
    * Resolves a fractional order key and retries once on unique-order race.
    * @param params - Quiz/order anchors and callback that applies the resolved key
    * @returns Callback result after successful order resolution
@@ -52,11 +107,22 @@ export class QuizService {
     nextOrder: string | undefined;
     execute: (order: string) => Promise<T>;
   }): Promise<T> {
-    const { quizId, prevOrder, nextOrder, execute } = params;
+    const { quizId, execute } = params;
+    let { prevOrder, nextOrder } = params;
     const maxAttempts = 2;
 
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
       try {
+        if (attempt > 0) {
+          const refreshedAnchors = await this.refreshRetryAnchors(
+            quizId,
+            prevOrder,
+            nextOrder
+          );
+          prevOrder = refreshedAnchors.prevOrder;
+          nextOrder = refreshedAnchors.nextOrder;
+        }
+
         const order = await resolveQuestionOrder({
           quizId,
           getLastQuestionOrder: targetQuizId =>

@@ -80,6 +80,58 @@ export class QuizRepository {
   }
 
   /**
+   * Fetches the nearest order key strictly after a lower bound.
+   * Optionally constrains with an upper bound.
+   * @param quizId - Quiz ID
+   * @param lowerBound - Lower order bound (exclusive)
+   * @param upperBound - Optional upper order bound (exclusive)
+   * @returns Nearest order key after lower bound or null
+   */
+  async getNearestQuestionOrderAfter(
+    quizId: string,
+    lowerBound: string,
+    upperBound?: string
+  ) {
+    return prisma.question.findFirst({
+      where: {
+        quizId,
+        order: {
+          gt: lowerBound,
+          ...(upperBound ? { lt: upperBound } : {}),
+        },
+      },
+      orderBy: { order: 'asc' },
+      select: { order: true },
+    });
+  }
+
+  /**
+   * Fetches the nearest order key strictly before an upper bound.
+   * Optionally constrains with a lower bound.
+   * @param quizId - Quiz ID
+   * @param upperBound - Upper order bound (exclusive)
+   * @param lowerBound - Optional lower order bound (exclusive)
+   * @returns Nearest order key before upper bound or null
+   */
+  async getNearestQuestionOrderBefore(
+    quizId: string,
+    upperBound: string,
+    lowerBound?: string
+  ) {
+    return prisma.question.findFirst({
+      where: {
+        quizId,
+        order: {
+          lt: upperBound,
+          ...(lowerBound ? { gt: lowerBound } : {}),
+        },
+      },
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    });
+  }
+
+  /**
    * Fetch question metadata required for add-option validation and ownership checks.
    * @param id - Question ID
    * @returns Question type and parent quiz creator id or null if not found
