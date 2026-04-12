@@ -32,8 +32,7 @@ Authorization: Bearer {{authToken}}
 	"questionText": "What is the capital of France?",
 	"type": "MCQ",
 	"timeLimit": 30,
-	"points": 1,
-	"order": 1
+	"points": 1
 }
 
 ###
@@ -61,3 +60,14 @@ Authorization: Bearer {{authToken}}
 		"isCorrect": false
 	}
 ]
+
+###
+# Reorder question (PATCH /api/v1/quizzes/:quizId/questions/:questionId/reorder) - protected
+PATCH {{quizBase}}/{{quizId}}/questions/{{questionId}}/reorder
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+	"prevReorderToken": "am",
+	"nextReorderToken": "an"
+}

@@ -6,6 +6,7 @@ import {
   createQuizSchema,
   addQuestionSchema,
   addOptionsSchema,
+  reorderQuestionSchema,
 } from './quiz.schema.js';
 import { validateSchema } from '@shared/middlewares/validateSchema.js';
 import { z } from 'zod';
@@ -49,6 +50,13 @@ router.post(
   requireAuth,
   validateSchema(z.array(addOptionsSchema)),
   asyncHandler(quizController.addOptionToQuestion.bind(quizController))
+);
+
+router.patch(
+  '/:quizId/questions/:questionId/reorder',
+  requireAuth,
+  validateSchema(reorderQuestionSchema),
+  asyncHandler(quizController.reorderQuestion.bind(quizController))
 );
 
 export default router;

@@ -1,8 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { ApiError } from '@shared/utils/errors/apiError.js';
+import { ApiError, ERROR_CODES } from '@shared/utils/errors/index.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
-import { ERROR_CODES } from '@shared/utils/errors/errorCodes.js';
 import { env } from '@config/env.js';
 import { AUTH_COOKIE_NAME } from '@modules/auth/auth.constants.js';
 

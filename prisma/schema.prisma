@@ -40,7 +40,7 @@ model Quiz {
   updatedAt   DateTime @updatedAt
 
   createdBy String
-  creator   User   @relation("UserQuizzes", fields: [createdBy], references: [id])
+  creator   User   @relation("UserQuizzes", fields: [createdBy], references: [id], onDelete: Cascade)
 
   questions Question[]
 
@@ -53,10 +53,10 @@ model Question {
   type         QuestionType
   timeLimit    Int
   points       Int
-  order        Int
+  order        String
 
   quizId String
-  quiz   Quiz   @relation(fields: [quizId], references: [id])
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   options Option[]
 
@@ -69,7 +69,8 @@ model Option {
   isCorrect  Boolean
 
   questionId String
-  question   Question @relation(fields: [questionId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
+  @@unique([questionId, optionText])
   @@index([questionId])
 }
