@@ -10,6 +10,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   REQUIRE_REQUEST_BODY: 'Request body is required',
   QUIZ_NOT_FOUND: 'Quiz not found',
   QUESTION_NOT_FOUND: 'Question not found',
+  INVALID_ANCHOR: 'Invalid reorder position',
   DUPLICATE_QUESTION_ORDER: 'Question order already exists for this quiz',
   DUPLICATE_OPTIONS: 'Duplicate options are not allowed for this question',
   INVALID_OPTIONS: 'Invalid options provided',

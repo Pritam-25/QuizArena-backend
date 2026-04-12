@@ -207,6 +207,13 @@ export class QuizService {
 
     const { prevReorderToken, nextReorderToken } = anchors;
 
+    if (
+      prevReorderToken === question.order ||
+      nextReorderToken === question.order
+    ) {
+      throw new ApiError(statusCode.badRequest, ERROR_CODES.INVALID_ANCHOR);
+    }
+
     return this.executeWithResolvedOrderRetry({
       quizId,
       prevOrder: prevReorderToken,
