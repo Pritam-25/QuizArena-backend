@@ -83,7 +83,7 @@ describeDb('Quiz integration', () => {
     await expect(
       service.addOptionToQuestion(
         question.id,
-        [{ optionText: 'A', isCorrect: false }],
+        [{ optionText: 'A', isCorrect: true }],
         owner.id
       )
     ).rejects.toMatchObject({
