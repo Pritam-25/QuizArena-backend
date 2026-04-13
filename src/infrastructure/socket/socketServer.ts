@@ -12,22 +12,61 @@ let io: SocketIOServer | null = null;
 let pubClient: RedisClient | null = null;
 let subClient: RedisClient | null = null;
 
+const closeRedisClient = async (client: RedisClient | null) => {
+  if (!client) {
+    return;
+  }
+
+  try {
+    if (client.isOpen) {
+      await client.quit();
+      return;
+    }
+
+    await client.disconnect();
+  } catch (error) {
+    logger.warn({ err: error }, 'Failed to close socket Redis client');
+  }
+};
+
 /**
  * Creates and connects Redis pub/sub clients used by the Socket.IO adapter.
  */
 const connectAdapterClients = async () => {
-  pubClient = createClient({ url: env.REDIS_URL });
-  subClient = pubClient.duplicate();
+  if (pubClient || subClient) {
+    await Promise.allSettled([
+      closeRedisClient(subClient),
+      closeRedisClient(pubClient),
+    ]);
+    pubClient = null;
+    subClient = null;
+  }
 
-  pubClient.on('error', error => {
+  const nextPubClient = createClient({ url: env.REDIS_URL });
+  const nextSubClient = nextPubClient.duplicate();
+
+  nextPubClient.on('error', error => {
     logger.error({ err: error }, 'Socket Redis pub client error');
   });
 
-  subClient.on('error', error => {
+  nextSubClient.on('error', error => {
     logger.error({ err: error }, 'Socket Redis sub client error');
   });
 
-  await Promise.all([pubClient.connect(), subClient.connect()]);
+  try {
+    await Promise.all([nextPubClient.connect(), nextSubClient.connect()]);
+  } catch (error) {
+    await Promise.allSettled([
+      closeRedisClient(nextSubClient),
+      closeRedisClient(nextPubClient),
+    ]);
+    pubClient = null;
+    subClient = null;
+    throw error;
+  }
+
+  pubClient = nextPubClient;
+  subClient = nextSubClient;
 
   logger.info('Socket Redis adapter clients connected');
 };
@@ -45,7 +84,7 @@ export const setupSocketServer = async (httpServer: HttpServer) => {
   if (!io) {
     io = new SocketIOServer(httpServer, {
       cors: {
-        origin: true,
+        origin: env.CORS_ORIGINS,
         credentials: true,
       },
     });
@@ -94,8 +133,6 @@ export const getSocketServer = () => {
  * Closes the Socket.IO server and Redis adapter connections gracefully.
  */
 export const closeSocketInfrastructure = async () => {
-  const shutdownTasks: Array<Promise<unknown>> = [];
-
   if (io) {
     await new Promise<void>(resolve => {
       io?.close(() => {
@@ -105,15 +142,10 @@ export const closeSocketInfrastructure = async () => {
     io = null;
   }
 
-  if (subClient?.isOpen) {
-    shutdownTasks.push(subClient.quit());
-  }
-
-  if (pubClient?.isOpen) {
-    shutdownTasks.push(pubClient.quit());
-  }
-
-  await Promise.allSettled(shutdownTasks);
+  await Promise.allSettled([
+    closeRedisClient(subClient),
+    closeRedisClient(pubClient),
+  ]);
   pubClient = null;
   subClient = null;
 };

@@ -11,6 +11,7 @@ import {
   traceIdHeaderMiddleware,
 } from '@shared/middlewares/index.js';
 import router from '@app/api/v1/routes.js';
+import { env } from '@config/env.js';
 
 const app: Application = express();
 
@@ -20,7 +21,7 @@ const app: Application = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: true,
+    origin: env.CORS_ORIGINS,
     credentials: true,
   })
 );
