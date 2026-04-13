@@ -1,5 +1,9 @@
 import { SessionStatus } from '@generated/prisma/enums.js';
 import {
+  addPlayer,
+  createSessionState,
+} from '@infrastructure/session.state.js';
+import {
   ApiError,
   ERROR_CODES,
   isUniqueConstraintError,
@@ -37,6 +41,8 @@ export class SessionService {
       hostId: data.hostId,
       joinCode,
     });
+
+    await createSessionState(session.id);
 
     return {
       ...session,
@@ -90,6 +96,8 @@ export class SessionService {
 
       throw error;
     }
+
+    await addPlayer(session.id, participant.id);
 
     return {
       sessionId: session.id,

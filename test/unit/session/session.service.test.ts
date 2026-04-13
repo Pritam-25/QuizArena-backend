@@ -1,10 +1,16 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SessionStatus } from '../../../src/generated/prisma/enums.js';
 import { SessionService } from '../../../src/modules/session/session.service.js';
 import type { SessionRepository } from '../../../src/modules/session/session.repository.js';
 import { ERROR_CODES } from '../../../src/shared/utils/errors/errorCodes.js';
 import { statusCode } from '../../../src/shared/utils/http/statusCodes.js';
 import * as errorUtils from '../../../src/shared/utils/errors/index.js';
+import * as sessionState from '../../../src/infrastructure/session.state.js';
+
+vi.mock('@infrastructure/session.state.js', () => ({
+  createSessionState: vi.fn(),
+  addPlayer: vi.fn(),
+}));
 
 type RepoMock = {
   createSession: ReturnType<typeof vi.fn>;
@@ -25,6 +31,10 @@ function buildRepoMock(): RepoMock {
 }
 
 describe('SessionService', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('createSession persists session and returns prefixed join link', async () => {
     const repo = buildRepoMock();
     const service = new SessionService(repo as unknown as SessionRepository);
@@ -55,6 +65,7 @@ describe('SessionService', () => {
     expect(result.joinCode).toBe(
       'quizArena.com/123e4567-e89b-12d3-a456-426614174000'
     );
+    expect(sessionState.createSessionState).toHaveBeenCalledWith('session-1');
   });
 
   it('joinSession returns SESSION_NOT_FOUND when session does not exist', async () => {
@@ -149,6 +160,10 @@ describe('SessionService', () => {
       sessionId: 'session-1',
       participant,
     });
+    expect(sessionState.addPlayer).toHaveBeenCalledWith(
+      'session-1',
+      'participant-1'
+    );
   });
 
   it('startSession returns SESSION_NOT_FOUND when session is missing', async () => {
