@@ -4,7 +4,7 @@ import type {
   JoinSessionInputDto,
 } from './session.schema.js';
 
-export type CreateSessionDto = CreateSessionInputDto;
+export type CreateSessionDto = CreateSessionInputDto & { hostId: string };
 export type JoinSessionDto = JoinSessionInputDto;
 
 export type SessionResponseDto = Session & {

@@ -10,10 +10,6 @@ export const createSessionSchema = z.object({
     error: issue =>
       issue.input === undefined ? 'quizId is required' : undefined,
   }),
-  hostId: z.uuid({
-    error: issue =>
-      issue.input === undefined ? 'hostId is required' : undefined,
-  }),
 });
 
 /**

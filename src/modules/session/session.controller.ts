@@ -1,7 +1,9 @@
 import type { Request, Response } from 'express';
+import { getRequiredUserId } from '@shared/utils/context/index.js';
 import { statusCode, successResponse } from '@shared/utils/http/index.js';
 import type { SessionService } from './session.service.js';
 import type { CreateSessionDto, JoinSessionDto } from './session.dto.js';
+import type { CreateSessionInputDto } from './session.schema.js';
 
 export class SessionController {
   /**
@@ -16,8 +18,14 @@ export class SessionController {
    * @param res - Express response
    */
   async createSession(req: Request, res: Response) {
-    const payload = req.body as CreateSessionDto;
-    const session = await this.service.createSession(payload);
+    const userId = getRequiredUserId(req);
+    const payload = req.body as CreateSessionInputDto;
+    const sessionData: CreateSessionDto = {
+      ...payload,
+      hostId: userId,
+    };
+
+    const session = await this.service.createSession(sessionData);
 
     return res
       .status(statusCode.created)

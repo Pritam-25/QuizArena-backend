@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { asyncHandler } from '@shared/middlewares/asyncHandler.js';
+import { authMiddleware, requireAuth } from '@shared/middlewares/auth.js';
 import { validateSchema } from '@shared/middlewares/validateSchema.js';
 import { createSessionModule } from './session.factory.js';
 import { createSessionSchema, joinSessionSchema } from './session.schema.js';
@@ -12,8 +13,11 @@ const router: Router = Router();
 
 const { controller: sessionController } = createSessionModule();
 
+router.use(authMiddleware);
+
 router.post(
   '/',
+  requireAuth,
   validateSchema(createSessionSchema),
   asyncHandler(sessionController.createSession.bind(sessionController))
 );

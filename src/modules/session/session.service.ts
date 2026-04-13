@@ -32,7 +32,11 @@ export class SessionService {
    * */
   async createSession(data: CreateSessionDto): Promise<SessionResponseDto> {
     const joinCode = generateSessionJoinCode();
-    const session = await this.repo.createSession({ ...data, joinCode });
+    const session = await this.repo.createSession({
+      quizId: data.quizId,
+      hostId: data.hostId,
+      joinCode,
+    });
 
     return {
       ...session,
