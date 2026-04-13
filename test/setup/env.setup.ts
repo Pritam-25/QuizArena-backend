@@ -12,3 +12,4 @@ process.env.SERVICE_NAME ??= 'quiz-arena-api-test';
 process.env.JWT_SECRET ??= 'test-secret';
 process.env.DATABASE_URL ??=
   'postgresql://user:password@127.0.0.1:5432/quiz_arena_test';
+process.env.REDIS_URL ??= 'redis://127.0.0.1:6379';

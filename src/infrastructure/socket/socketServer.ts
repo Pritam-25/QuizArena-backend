@@ -4,6 +4,7 @@ import { createClient } from 'redis';
 import { Server as SocketIOServer } from 'socket.io';
 import { env } from '@config/env.js';
 import logger from '@infrastructure/logger/logger.js';
+import { socketAuthMiddleware } from './socketAuth.js';
 
 type RedisClient = ReturnType<typeof createClient>;
 
@@ -49,8 +50,13 @@ export const setupSocketServer = async (httpServer: HttpServer) => {
       },
     });
 
+    io.use(socketAuthMiddleware);
+
     io.on('connection', socket => {
-      logger.info({ socketId: socket.id }, 'Socket connected');
+      logger.info(
+        { socketId: socket.id, userId: socket.data.userId },
+        'Socket connected'
+      );
 
       socket.on('disconnect', reason => {
         logger.info({ socketId: socket.id, reason }, 'Socket disconnected');
