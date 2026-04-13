@@ -1,0 +1,131 @@
+name: Backend Tests
+
+on:
+  pull_request:
+    branches: ['**']
+  push:
+    branches: ['main', 'develop']
+
+jobs:
+  unit-and-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create test env file
+        run: |
+          cat <<'EOF' > .env.test
+          NODE_ENV=test
+          PORT=4000
+          SERVICE_NAME=quiz-arena-api-test
+          JWT_SECRET=test-secret
+          DATABASE_URL=postgresql://user:password@127.0.0.1:5432/quiz_arena_test
+          EOF
+
+      - name: Run unit tests
+        run: pnpm run test:unit
+
+      - name: Run API tests
+        run: pnpm run test:api
+
+  integration-db:
+    runs-on: ubuntu-latest
+    needs: unit-and-api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create test env file
+        env:
+          JWT_SECRET_TEST: ${{ secrets.JWT_SECRET_TEST }}
+          DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
+        run: |
+          if [ -z "$JWT_SECRET_TEST" ] || [ -z "$DATABASE_URL_TEST" ]; then
+            echo "Missing DATABASE_URL_TEST or JWT_SECRET_TEST secret";
+            echo "Set both secrets to enable DB integration tests.";
+            exit 1;
+          fi
+
+          cat <<EOF > .env.test
+          NODE_ENV=test
+          PORT=4000
+          SERVICE_NAME=quiz-arena-api-test
+          JWT_SECRET=$JWT_SECRET_TEST
+          DATABASE_URL=$DATABASE_URL_TEST
+          EOF
+
+      - name: Run DB integration tests
+        run: pnpm run test:integration:db
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: unit-and-api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create test env file
+        run: |
+          cat <<'EOF' > .env.test
+          NODE_ENV=test
+          PORT=4000
+          SERVICE_NAME=quiz-arena-api-test
+          JWT_SECRET=test-secret
+          DATABASE_URL=postgresql://user:password@127.0.0.1:5432/quiz_arena_test
+          EOF
+
+      - name: Run coverage
+        run: pnpm run test:coverage
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: error
