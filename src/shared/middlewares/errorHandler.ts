@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from 'express';
 import logger from '@infrastructure/logger/logger.js';
+import { AuthTokenError } from '@shared/utils/auth/index.js';
 import { ApiError, ERROR_CODES } from '@shared/utils/errors/index.js';
 import { errorResponse, statusCode } from '@shared/utils/http/index.js';
 
@@ -47,6 +48,17 @@ const errorHandlerMiddleware: ErrorRequestHandler = (err, req, res, next) => {
 
   if (err instanceof ApiError) {
     return res.status(err.statusCode).json(errorResponse(err));
+  }
+
+  if (err instanceof AuthTokenError) {
+    const invalidTokenError = new ApiError(
+      statusCode.unauthorized,
+      ERROR_CODES.INVALID_TOKEN
+    );
+
+    return res
+      .status(invalidTokenError.statusCode)
+      .json(errorResponse(invalidTokenError));
   }
 
   const internalError = new ApiError(status, ERROR_CODES.INTERNAL_ERROR);

@@ -9,7 +9,6 @@ declare global {
 
     interface Request {
       user?: AuthenticatedUser;
-      userId?: string;
       requestId?: string;
       logger: Logger;
     }
