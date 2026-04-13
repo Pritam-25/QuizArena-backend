@@ -39,6 +39,11 @@ jobs:
           DATABASE_URL=postgresql://user:password@127.0.0.1:5432/quiz_arena_test
           EOF
 
+      - name: Generate Prisma client
+        env:
+          DATABASE_URL: postgresql://user:password@127.0.0.1:5432/quiz_arena_test
+        run: pnpm prisma generate
+
       - name: Run unit tests
         run: pnpm run test:unit
 
@@ -84,6 +89,11 @@ jobs:
           DATABASE_URL=$DATABASE_URL_TEST
           EOF
 
+      - name: Generate Prisma client
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_TEST }}
+        run: pnpm prisma generate
+
       - name: Run DB integration tests
         run: pnpm run test:integration:db
 
@@ -116,6 +126,11 @@ jobs:
           JWT_SECRET=test-secret
           DATABASE_URL=postgresql://user:password@127.0.0.1:5432/quiz_arena_test
           EOF
+
+      - name: Generate Prisma client
+        env:
+          DATABASE_URL: postgresql://user:password@127.0.0.1:5432/quiz_arena_test
+        run: pnpm prisma generate
 
       - name: Run coverage
         run: pnpm run test:coverage
