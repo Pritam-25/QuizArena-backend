@@ -19,6 +19,13 @@ enum QuestionType {
   FILL_IN_THE_BLANK
 }
 
+enum SessionStatus {
+  WAITING
+  LIVE
+  PAUSED
+  ENDED
+}
+
 model User {
   id        String   @id @default(uuid())
   username  String
@@ -28,7 +35,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  quizzes Quiz[] @relation("UserQuizzes")
+  quizzes  Quiz[]    @relation("UserQuizzes")
+  sessions Session[]
 }
 
 model Quiz {
@@ -43,6 +51,7 @@ model Quiz {
   creator   User   @relation("UserQuizzes", fields: [createdBy], references: [id], onDelete: Cascade)
 
   questions Question[]
+  sessions  Session[]
 
   @@index([createdBy])
 }
@@ -73,4 +82,39 @@ model Option {
 
   @@unique([questionId, optionText])
   @@index([questionId])
+}
+
+model Session {
+  id String @id @default(uuid())
+
+  joinCode String        @unique
+  status   SessionStatus @default(WAITING)
+
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  hostId String
+  host   User   @relation(fields: [hostId], references: [id])
+
+  currentQuestionIndex Int @default(0)
+
+  startedAt DateTime?
+  endedAt   DateTime?
+
+  createdAt    DateTime      @default(now())
+  participants Participant[]
+}
+
+model Participant {
+  id String @id @default(uuid())
+
+  sessionId String
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  nickname String
+  score    Int    @default(0)
+
+  joinedAt DateTime @default(now())
+
+  @@unique([sessionId, nickname])
 }

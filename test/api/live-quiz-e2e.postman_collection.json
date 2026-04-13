@@ -266,7 +266,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nextOrder\": \"{{q1Order}}\"\n}"
+          "raw": "{\n  \"nextReorderToken\": \"{{q1Order}}\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/quizzes/{{quizId}}/questions/{{q2Id}}/reorder",
@@ -338,7 +338,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"quizId\": \"{{quizId}}\",\n  \"hostId\": \"{{ownerUserId}}\"\n}"
+          "raw": "{\n  \"quizId\": \"{{quizId}}\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/sessions",

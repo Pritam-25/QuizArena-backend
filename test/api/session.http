@@ -1,0 +1,35 @@
+@apiV1 = http://localhost:4000/api/v1
+@sessionBase = {{apiV1}}/sessions
+@authToken = REPLACE_JWT_TOKEN
+
+###
+# Create session (POST /api/v1/sessions)
+# Use an existing quiz id from your DB.
+POST {{sessionBase}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "quizId": "REPLACE_QUIZ_ID"
+}
+
+###
+# Get session by id (GET /api/v1/sessions/:sessionId)
+@sessionId = REPLACE_SESSION_ID
+GET {{sessionBase}}/{{sessionId}}
+
+###
+# Join session (POST /api/v1/sessions/join)
+# joinCode accepts either UUID or full link format.
+POST {{sessionBase}}/join
+Content-Type: application/json
+
+{
+  "joinCode": "REPLACE_JOIN_CODE_OR_LINK",
+  "nickname": "player_one"
+}
+
+###
+# Start session (POST /api/v1/sessions/:sessionId/start)
+POST {{sessionBase}}/{{sessionId}}/start
+Authorization: Bearer {{authToken}}
