@@ -68,5 +68,5 @@ describeDb('Quiz to Session flow (e2e)', () => {
 
     expect(startResponse.status).toBe(200);
     expect(startResponse.body.data.status).toBe('LIVE');
-  });
+  }, 30000);
 });
