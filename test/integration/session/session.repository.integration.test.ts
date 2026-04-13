@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { SessionStatus } from '../../src/generated/prisma/enums.js';
-import { prisma } from '../../src/infrastructure/database/prismaClient.js';
-import { SessionRepository } from '../../src/modules/session/session.repository.js';
+import { SessionStatus } from '../../../src/generated/prisma/enums.js';
+import { prisma } from '../../../src/infrastructure/database/prismaClient.js';
+import { SessionRepository } from '../../../src/modules/session/session.repository.js';
 
 const describeDb =
   process.env.RUN_DB_TESTS === 'true' ? describe : describe.skip;

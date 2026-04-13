@@ -10,15 +10,15 @@ const resolveQuestionOrderMock = vi.hoisted(() => vi.fn());
 const validateQuestionOptionsMock = vi.hoisted(() => vi.fn());
 const toQuizDetailsResponseDtoMock = vi.hoisted(() => vi.fn());
 
-vi.mock('../../../src/modules/quiz/utils/resolveQuestionOrder.js', () => ({
+vi.mock('@modules/quiz/utils/resolveQuestionOrder.js', () => ({
   resolveQuestionOrder: resolveQuestionOrderMock,
 }));
 
-vi.mock('../../../src/modules/quiz/utils/validateQuestionOptions.js', () => ({
+vi.mock('@modules/quiz/utils/validateQuestionOptions.js', () => ({
   validateQuestionOptions: validateQuestionOptionsMock,
 }));
 
-vi.mock('../../../src/modules/quiz/quiz.mapper.js', () => ({
+vi.mock('@modules/quiz/quiz.mapper.js', () => ({
   toQuizDetailsResponseDto: toQuizDetailsResponseDtoMock,
 }));
 
@@ -209,6 +209,162 @@ describe('QuizService', () => {
       statusCode: statusCode.badRequest,
       errorCode: ERROR_CODES.DUPLICATE_OPTIONS,
     });
+  });
+
+  it('addOptionToQuestion surfaces validation errors from validateQuestionOptions', async () => {
+    const repo = buildRepoMock();
+    const service = new QuizService(repo as unknown as QuizRepository);
+
+    repo.getQuestionById.mockResolvedValue({
+      id: 'question-1',
+      type: QuestionType.MCQ,
+      quiz: { createdBy: 'user-1' },
+    });
+
+    const validationError = new Error('invalid options');
+    validateQuestionOptionsMock.mockImplementationOnce(() => {
+      throw validationError;
+    });
+
+    await expect(
+      service.addOptionToQuestion(
+        'question-1',
+        [{ optionText: 'A', isCorrect: true }],
+        'user-1'
+      )
+    ).rejects.toBe(validationError);
+
+    expect(repo.addOptionToQuestion).not.toHaveBeenCalled();
+  });
+
+  it('reorderQuestionInQuiz updates order successfully', async () => {
+    const repo = buildRepoMock();
+    const service = new QuizService(repo as unknown as QuizRepository);
+
+    repo.findQuizById.mockResolvedValue({ id: 'quiz-1', createdBy: 'user-1' });
+    repo.getQuestionForReorder.mockResolvedValue({
+      id: 'question-1',
+      quizId: 'quiz-1',
+      order: 'm',
+    });
+    resolveQuestionOrderMock.mockResolvedValue('n');
+    repo.updateQuestionOrder.mockResolvedValue({
+      id: 'question-1',
+      quizId: 'quiz-1',
+      order: 'n',
+    });
+
+    const result = await service.reorderQuestionInQuiz(
+      'quiz-1',
+      'question-1',
+      'user-1',
+      {
+        prevReorderToken: 'g',
+        nextReorderToken: 't',
+      }
+    );
+
+    expect(repo.updateQuestionOrder).toHaveBeenCalledWith('question-1', 'n');
+    expect(result).toEqual({
+      id: 'question-1',
+      quizId: 'quiz-1',
+      order: 'n',
+    });
+  });
+
+  it('reorderQuestionInQuiz retries with refreshed anchors on unique conflict', async () => {
+    const repo = buildRepoMock();
+    const service = new QuizService(repo as unknown as QuizRepository);
+
+    repo.findQuizById.mockResolvedValue({ id: 'quiz-1', createdBy: 'user-1' });
+    repo.getQuestionForReorder.mockResolvedValue({
+      id: 'question-1',
+      quizId: 'quiz-1',
+      order: 'm',
+    });
+
+    const dbConflictError = new Error('unique constraint');
+    repo.updateQuestionOrder
+      .mockRejectedValueOnce(dbConflictError)
+      .mockResolvedValueOnce({
+        id: 'question-1',
+        quizId: 'quiz-1',
+        order: 'i',
+      });
+
+    repo.getNearestQuestionOrderAfter.mockResolvedValue({ order: 't' });
+    resolveQuestionOrderMock
+      .mockResolvedValueOnce('h')
+      .mockResolvedValueOnce('i');
+
+    const uniqueSpy = vi
+      .spyOn(errorUtils, 'isUniqueConstraintError')
+      .mockReturnValue(true);
+
+    const result = await service.reorderQuestionInQuiz(
+      'quiz-1',
+      'question-1',
+      'user-1',
+      {
+        prevReorderToken: 'g',
+        nextReorderToken: 'z',
+      }
+    );
+
+    expect(repo.getNearestQuestionOrderAfter).toHaveBeenCalledWith(
+      'quiz-1',
+      'g',
+      'z'
+    );
+    expect(resolveQuestionOrderMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        prevOrder: 'g',
+        nextOrder: 't',
+      })
+    );
+    expect(result.order).toBe('i');
+    uniqueSpy.mockRestore();
+  });
+
+  it('reorderQuestionInQuiz throws DUPLICATE_QUESTION_ORDER after retry exhaustion', async () => {
+    const repo = buildRepoMock();
+    const service = new QuizService(repo as unknown as QuizRepository);
+
+    repo.findQuizById.mockResolvedValue({ id: 'quiz-1', createdBy: 'user-1' });
+    repo.getQuestionForReorder.mockResolvedValue({
+      id: 'question-1',
+      quizId: 'quiz-1',
+      order: 'm',
+    });
+
+    resolveQuestionOrderMock
+      .mockResolvedValueOnce('h')
+      .mockResolvedValueOnce('i');
+
+    const dbConflictError = new Error('unique constraint');
+    repo.updateQuestionOrder
+      .mockRejectedValueOnce(dbConflictError)
+      .mockRejectedValueOnce(dbConflictError);
+
+    repo.getNearestQuestionOrderAfter.mockResolvedValue({ order: 't' });
+
+    const uniqueSpy = vi
+      .spyOn(errorUtils, 'isUniqueConstraintError')
+      .mockReturnValue(true);
+
+    await expect(
+      service.reorderQuestionInQuiz('quiz-1', 'question-1', 'user-1', {
+        prevReorderToken: 'g',
+        nextReorderToken: 'z',
+      })
+    ).rejects.toMatchObject({
+      statusCode: statusCode.badRequest,
+      errorCode: ERROR_CODES.DUPLICATE_QUESTION_ORDER,
+    });
+
+    expect(repo.updateQuestionOrder).toHaveBeenCalledTimes(2);
+    uniqueSpy.mockRestore();
   });
 
   it('reorderQuestionInQuiz throws INVALID_ANCHOR when next token equals current order', async () => {

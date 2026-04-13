@@ -8,10 +8,12 @@
 
 ## Folder Structure
 
-- `test/unit` - pure unit tests (no DB/network)
-- `test/api` - HTTP tests against Express app using Supertest
-- `test/integration` - DB-backed integration tests
-- `test/setup` - shared Vitest setup files
+- `test/unit/auth|user|quiz|session` - service/unit tests (no DB/network)
+- `test/api` - route-level API tests with mocked module factories
+- `test/integration/auth|user|quiz|session` - DB-backed integration tests
+- `test/e2e` - end-to-end workflow tests across modules
+- `test/setup` - shared setup helpers (`env.setup.ts`, `vitest.setup.ts`, `test-db.ts`, `test-server.ts`)
+- `test/http` - manual `.http` request collections
 
 ## Environment
 
@@ -29,13 +31,14 @@ Create `.env.test` with at least:
 - `pnpm test:unit`
 - `pnpm test:api`
 - `pnpm test:integration`
+- `pnpm test:e2e`
 - `pnpm test:all`
 - `pnpm test:coverage`
 
 For DB-backed integration runs:
 
 1. Ensure `.env.test` points to a dedicated test database.
-2. Run `pnpm test:integration:db`.
+2. Run `pnpm test:integration:db` (runs migration reset + integration + e2e).
 
 ## Neon DB Recommendation
 

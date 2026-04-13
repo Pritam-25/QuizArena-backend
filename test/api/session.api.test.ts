@@ -2,8 +2,8 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { env } from '@config/env.js';
-import errorHandlerMiddleware from '@shared/middlewares/errorHandler.js';
+import { env } from '../../src/config/env.js';
+import errorHandlerMiddleware from '../../src/shared/middlewares/errorHandler.js';
 import sessionRoutes from '../../src/modules/session/session.routes.js';
 
 const sessionControllerMock = vi.hoisted(() => ({
