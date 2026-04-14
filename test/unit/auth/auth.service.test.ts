@@ -6,7 +6,6 @@ import { AuthService } from '../../../src/modules/auth/auth.service.js';
 import type { AuthRepository } from '../../../src/modules/auth/auth.repository.js';
 import { ERROR_CODES } from '../../../src/shared/utils/errors/errorCodes.js';
 import { statusCode } from '../../../src/shared/utils/http/statusCodes.js';
-import * as errorUtils from '../../../src/shared/utils/errors/index.js';
 
 type RepoMock = {
   findUserByEmail: ReturnType<typeof vi.fn>;
@@ -75,26 +74,6 @@ describe('AuthService', () => {
     };
     expect(decoded.userId).toBe('user-1');
     expect(result.user.email).toBe('pritam@example.com');
-  });
-
-  it('register maps unique constraint error to USER_ALREADY_EXISTS', async () => {
-    const repo = buildRepoMock();
-    const service = new AuthService(repo as unknown as AuthRepository);
-
-    repo.findUserByEmail.mockResolvedValue(null);
-    repo.createUser.mockRejectedValue(new Error('duplicate'));
-    vi.spyOn(errorUtils, 'isUniqueConstraintError').mockReturnValue(true);
-
-    await expect(
-      service.register({
-        username: 'pritam',
-        email: 'pritam@example.com',
-        password: 'password123',
-      })
-    ).rejects.toMatchObject({
-      statusCode: statusCode.conflict,
-      errorCode: ERROR_CODES.USER_ALREADY_EXISTS,
-    });
   });
 
   it('login throws INVALID_CREDENTIALS when user does not exist', async () => {

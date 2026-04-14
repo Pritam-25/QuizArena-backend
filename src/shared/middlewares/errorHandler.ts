@@ -1,34 +1,24 @@
 import type { ErrorRequestHandler } from 'express';
 import logger from '@infrastructure/logger/logger.js';
 import { AuthTokenError } from '@shared/utils/auth/index.js';
-import { ApiError, ERROR_CODES } from '@shared/utils/errors/index.js';
+import {
+  ApiError,
+  ERROR_CODES,
+  normalizeError,
+} from '@shared/utils/errors/index.js';
 import { errorResponse, statusCode } from '@shared/utils/http/index.js';
-
-const getStatusCode = (err: unknown): number => {
-  if (err instanceof ApiError) {
-    return err.statusCode;
-  }
-
-  if (
-    typeof err === 'object' &&
-    err !== null &&
-    'statusCode' in err &&
-    typeof err.statusCode === 'number' &&
-    err.statusCode >= 400 &&
-    err.statusCode <= 599
-  ) {
-    return err.statusCode;
-  }
-
-  return statusCode.internalError;
-};
 
 const errorHandlerMiddleware: ErrorRequestHandler = (err, req, res, next) => {
   if (res.headersSent) {
     return next(err);
   }
 
-  const status = getStatusCode(err);
+  const normalizedError =
+    err instanceof AuthTokenError
+      ? normalizeError(
+          new ApiError(statusCode.unauthorized, ERROR_CODES.INVALID_TOKEN)
+        )
+      : normalizeError(err);
   const rawPath = req.originalUrl ?? req.url ?? req.path ?? '/';
   const sanitizedPath = rawPath.split('?')[0] || '/';
 
@@ -38,7 +28,7 @@ const errorHandlerMiddleware: ErrorRequestHandler = (err, req, res, next) => {
     {
       err,
       requestId: req.requestId,
-      statusCode: status,
+      statusCode: normalizedError.statusCode,
       path: sanitizedPath,
       method: req.method,
       module: 'http',
@@ -46,26 +36,9 @@ const errorHandlerMiddleware: ErrorRequestHandler = (err, req, res, next) => {
     err instanceof Error ? err.message : 'Unhandled error'
   );
 
-  if (err instanceof ApiError) {
-    return res.status(err.statusCode).json(errorResponse(err));
-  }
-
-  if (err instanceof AuthTokenError) {
-    const invalidTokenError = new ApiError(
-      statusCode.unauthorized,
-      ERROR_CODES.INVALID_TOKEN
-    );
-
-    return res
-      .status(invalidTokenError.statusCode)
-      .json(errorResponse(invalidTokenError));
-  }
-
-  const internalError = new ApiError(status, ERROR_CODES.INTERNAL_ERROR);
-
   return res
-    .status(internalError.statusCode)
-    .json(errorResponse(internalError));
+    .status(normalizedError.statusCode)
+    .json(errorResponse(normalizedError));
 };
 
 export default errorHandlerMiddleware;
