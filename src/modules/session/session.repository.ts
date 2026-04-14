@@ -14,6 +14,17 @@ export class SessionRepository {
   }
 
   /**
+   * Deletes a session by ID.
+   * @param sessionId - The ID of the session to delete
+   * @returns The deleted Session record
+   */
+  async deleteSession(sessionId: string) {
+    return await prisma.session.delete({
+      where: { id: sessionId },
+    });
+  }
+
+  /**
    * Finds a session by its Join Code.
    * @param joinCode - The Join Code of the session to find
    * @returns The Session record if found, otherwise null
@@ -57,6 +68,17 @@ export class SessionRepository {
         sessionId,
         nickname,
       },
+    });
+  }
+
+  /**
+   * Deletes a participant by ID.
+   * @param participantId - The participant ID to delete
+   * @returns The deleted participant record
+   */
+  async deleteParticipant(participantId: string) {
+    return await prisma.participant.delete({
+      where: { id: participantId },
     });
   }
 

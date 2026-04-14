@@ -1,5 +1,10 @@
 import { SessionStatus } from '@generated/prisma/enums.js';
 import {
+  addPlayer,
+  createSessionState,
+} from '@infrastructure/session.state.js';
+import logger from '@infrastructure/logger/logger.js';
+import {
   ApiError,
   ERROR_CODES,
   isUniqueConstraintError,
@@ -37,6 +42,36 @@ export class SessionService {
       hostId: data.hostId,
       joinCode,
     });
+
+    try {
+      await createSessionState(session.id);
+    } catch (stateError) {
+      logger.error(
+        {
+          sessionId: session.id,
+          err: stateError,
+        },
+        'Failed to initialize Redis state for created session'
+      );
+
+      try {
+        await this.repo.deleteSession(session.id);
+        logger.warn(
+          { sessionId: session.id },
+          'Compensated session creation by deleting persisted session'
+        );
+      } catch (cleanupError) {
+        logger.error(
+          {
+            sessionId: session.id,
+            err: cleanupError,
+          },
+          'Failed to compensate session creation after Redis state failure'
+        );
+      }
+
+      throw new ApiError(statusCode.internalError, ERROR_CODES.INTERNAL_ERROR);
+    }
 
     return {
       ...session,
@@ -89,6 +124,41 @@ export class SessionService {
       }
 
       throw error;
+    }
+
+    try {
+      await addPlayer(session.id, participant.id);
+    } catch (addPlayerError) {
+      logger.error(
+        {
+          sessionId: session.id,
+          participantId: participant.id,
+          err: addPlayerError,
+        },
+        'Failed to add participant to Redis player set after DB participant insert'
+      );
+
+      try {
+        await this.repo.deleteParticipant(participant.id);
+        logger.warn(
+          {
+            sessionId: session.id,
+            participantId: participant.id,
+          },
+          'Compensated join by deleting persisted participant after Redis addPlayer failure'
+        );
+      } catch (cleanupError) {
+        logger.error(
+          {
+            sessionId: session.id,
+            participantId: participant.id,
+            err: cleanupError,
+          },
+          'Failed to compensate join after Redis addPlayer failure'
+        );
+      }
+
+      throw new ApiError(statusCode.internalError, ERROR_CODES.INTERNAL_ERROR);
     }
 
     return {

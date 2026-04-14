@@ -1,11 +1,16 @@
 import { randomUUID } from 'node:crypto';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { SessionStatus } from '@generated/prisma/enums.js';
 import { prisma } from '@infrastructure/database/prismaClient.js';
 import { SessionRepository } from '@modules/session/session.repository.js';
 import { SessionService } from '@modules/session/session.service.js';
 import { ERROR_CODES } from '@shared/utils/errors/errorCodes.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
+
+vi.mock('@infrastructure/session.state.js', () => ({
+  createSessionState: vi.fn().mockResolvedValue(undefined),
+  addPlayer: vi.fn().mockResolvedValue(1),
+}));
 
 const describeDb =
   process.env.RUN_DB_TESTS === 'true' ? describe : describe.skip;

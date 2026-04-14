@@ -23,7 +23,7 @@ const closeRedisClient = async (client: RedisClient | null) => {
       return;
     }
 
-    await client.disconnect();
+    client.destroy();
   } catch (error) {
     logger.warn({ err: error }, 'Failed to close socket Redis client');
   }
