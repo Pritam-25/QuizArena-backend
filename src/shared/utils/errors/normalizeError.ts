@@ -5,6 +5,22 @@ import type { ErrorContract } from './errorContract.js';
 import { ERROR_MESSAGES } from './errorMessages.js';
 import { normalizeDbError } from './normalizeDbError.js';
 
+const isErrorContractShape = (
+  error: unknown
+): error is Pick<ErrorContract, 'statusCode' | 'errorCode' | 'message'> &
+  Partial<Pick<ErrorContract, 'details'>> => {
+  if (typeof error !== 'object' || error === null) {
+    return false;
+  }
+
+  const candidate = error as Record<string, unknown>;
+  return (
+    typeof candidate.statusCode === 'number' &&
+    typeof candidate.errorCode === 'string' &&
+    typeof candidate.message === 'string'
+  );
+};
+
 const mapStatusCode = (errorCode: string): number => {
   switch (errorCode) {
     case ERROR_CODES.USER_ALREADY_EXISTS:
@@ -26,6 +42,15 @@ const mapStatusCode = (errorCode: string): number => {
 };
 
 export const normalizeError = (error: unknown): ErrorContract => {
+  if (isErrorContractShape(error)) {
+    return {
+      statusCode: error.statusCode,
+      errorCode: error.errorCode,
+      message: error.message,
+      ...(error.details !== undefined ? { details: error.details } : {}),
+    };
+  }
+
   if (error instanceof ApiError) {
     return {
       statusCode: error.statusCode,

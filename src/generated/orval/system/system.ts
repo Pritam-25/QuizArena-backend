@@ -13,13 +13,15 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
+import type { GetApiV1Health200 } from '../model';
+
 import { customInstance } from '../../../shared/api/custom-instance';
 
 /**
  * @summary Health check endpoint
  */
 export type getApiV1HealthResponse200 = {
-  data: unknown;
+  data: GetApiV1Health200;
   status: 200;
 };
 

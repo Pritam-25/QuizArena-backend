@@ -16,18 +16,29 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
+import type {
+  GetApiV1AuthMe200,
+  GetApiV1AuthMe401,
+  PostApiV1AuthLogin200,
+  PostApiV1AuthLogin401,
+  PostApiV1AuthLoginBody,
+  PostApiV1AuthRegister201,
+  PostApiV1AuthRegister409,
+  PostApiV1AuthRegisterBody,
+} from '../model';
+
 import { customInstance } from '../../../shared/api/custom-instance';
 
 /**
  * @summary Register a new user
  */
 export type postApiV1AuthRegisterResponse201 = {
-  data: unknown;
+  data: PostApiV1AuthRegister201;
   status: 201;
 };
 
 export type postApiV1AuthRegisterResponse409 = {
-  data: unknown;
+  data: PostApiV1AuthRegister409;
   status: 409;
 };
 
@@ -49,7 +60,7 @@ export const getPostApiV1AuthRegisterUrl = () => {
 };
 
 export const postApiV1AuthRegister = async (
-  postApiV1AuthRegisterBody: unknown,
+  postApiV1AuthRegisterBody: PostApiV1AuthRegisterBody,
   options?: RequestInit
 ): Promise<postApiV1AuthRegisterResponse> => {
   return customInstance<postApiV1AuthRegisterResponse>(
@@ -64,19 +75,19 @@ export const postApiV1AuthRegister = async (
 };
 
 export const getPostApiV1AuthRegisterMutationOptions = <
-  TError = unknown,
+  TError = PostApiV1AuthRegister409,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1AuthRegister>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1AuthRegisterBody },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postApiV1AuthRegister>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1AuthRegisterBody },
   TContext
 > => {
   const mutationKey = ['postApiV1AuthRegister'];
@@ -90,7 +101,7 @@ export const getPostApiV1AuthRegisterMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postApiV1AuthRegister>>,
-    { data: unknown }
+    { data: PostApiV1AuthRegisterBody }
   > = props => {
     const { data } = props ?? {};
 
@@ -103,26 +114,26 @@ export const getPostApiV1AuthRegisterMutationOptions = <
 export type PostApiV1AuthRegisterMutationResult = NonNullable<
   Awaited<ReturnType<typeof postApiV1AuthRegister>>
 >;
-export type PostApiV1AuthRegisterMutationBody = unknown;
-export type PostApiV1AuthRegisterMutationError = unknown;
+export type PostApiV1AuthRegisterMutationBody = PostApiV1AuthRegisterBody;
+export type PostApiV1AuthRegisterMutationError = PostApiV1AuthRegister409;
 
 /**
  * @summary Register a new user
  */
 export const usePostApiV1AuthRegister = <
-  TError = unknown,
+  TError = PostApiV1AuthRegister409,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1AuthRegister>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1AuthRegisterBody },
     TContext
   >;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postApiV1AuthRegister>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1AuthRegisterBody },
   TContext
 > => {
   return useMutation(getPostApiV1AuthRegisterMutationOptions(options));
@@ -131,12 +142,12 @@ export const usePostApiV1AuthRegister = <
  * @summary Authenticate a user
  */
 export type postApiV1AuthLoginResponse200 = {
-  data: unknown;
+  data: PostApiV1AuthLogin200;
   status: 200;
 };
 
 export type postApiV1AuthLoginResponse401 = {
-  data: unknown;
+  data: PostApiV1AuthLogin401;
   status: 401;
 };
 
@@ -157,7 +168,7 @@ export const getPostApiV1AuthLoginUrl = () => {
 };
 
 export const postApiV1AuthLogin = async (
-  postApiV1AuthLoginBody: unknown,
+  postApiV1AuthLoginBody: PostApiV1AuthLoginBody,
   options?: RequestInit
 ): Promise<postApiV1AuthLoginResponse> => {
   return customInstance<postApiV1AuthLoginResponse>(
@@ -172,19 +183,19 @@ export const postApiV1AuthLogin = async (
 };
 
 export const getPostApiV1AuthLoginMutationOptions = <
-  TError = unknown,
+  TError = PostApiV1AuthLogin401,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1AuthLogin>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1AuthLoginBody },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postApiV1AuthLogin>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1AuthLoginBody },
   TContext
 > => {
   const mutationKey = ['postApiV1AuthLogin'];
@@ -198,7 +209,7 @@ export const getPostApiV1AuthLoginMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postApiV1AuthLogin>>,
-    { data: unknown }
+    { data: PostApiV1AuthLoginBody }
   > = props => {
     const { data } = props ?? {};
 
@@ -211,26 +222,26 @@ export const getPostApiV1AuthLoginMutationOptions = <
 export type PostApiV1AuthLoginMutationResult = NonNullable<
   Awaited<ReturnType<typeof postApiV1AuthLogin>>
 >;
-export type PostApiV1AuthLoginMutationBody = unknown;
-export type PostApiV1AuthLoginMutationError = unknown;
+export type PostApiV1AuthLoginMutationBody = PostApiV1AuthLoginBody;
+export type PostApiV1AuthLoginMutationError = PostApiV1AuthLogin401;
 
 /**
  * @summary Authenticate a user
  */
 export const usePostApiV1AuthLogin = <
-  TError = unknown,
+  TError = PostApiV1AuthLogin401,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1AuthLogin>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1AuthLoginBody },
     TContext
   >;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postApiV1AuthLogin>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1AuthLoginBody },
   TContext
 > => {
   return useMutation(getPostApiV1AuthLoginMutationOptions(options));
@@ -239,12 +250,12 @@ export const usePostApiV1AuthLogin = <
  * @summary Get current authenticated user
  */
 export type getApiV1AuthMeResponse200 = {
-  data: unknown;
+  data: GetApiV1AuthMe200;
   status: 200;
 };
 
 export type getApiV1AuthMeResponse401 = {
-  data: unknown;
+  data: GetApiV1AuthMe401;
   status: 401;
 };
 
@@ -278,7 +289,7 @@ export const getGetApiV1AuthMeQueryKey = () => {
 
 export const getGetApiV1AuthMeQueryOptions = <
   TData = Awaited<ReturnType<typeof getApiV1AuthMe>>,
-  TError = unknown,
+  TError = GetApiV1AuthMe401,
 >(options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof getApiV1AuthMe>>,
@@ -304,7 +315,7 @@ export const getGetApiV1AuthMeQueryOptions = <
 export type GetApiV1AuthMeQueryResult = NonNullable<
   Awaited<ReturnType<typeof getApiV1AuthMe>>
 >;
-export type GetApiV1AuthMeQueryError = unknown;
+export type GetApiV1AuthMeQueryError = GetApiV1AuthMe401;
 
 /**
  * @summary Get current authenticated user
@@ -312,7 +323,7 @@ export type GetApiV1AuthMeQueryError = unknown;
 
 export function useGetApiV1AuthMe<
   TData = Awaited<ReturnType<typeof getApiV1AuthMe>>,
-  TError = unknown,
+  TError = GetApiV1AuthMe401,
 >(options?: {
   query?: UseQueryOptions<
     Awaited<ReturnType<typeof getApiV1AuthMe>>,

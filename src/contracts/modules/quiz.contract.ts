@@ -1,17 +1,20 @@
 import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
-import {
-  addOptionsSchema,
-  addQuestionSchema,
-  createQuizSchema,
-  reorderQuestionSchema,
-} from '@modules/quiz/quiz.schema.js';
+import { z } from 'zod3';
 import {
   createSuccessResponseSchema,
   errorResponseSchema,
   questionShapeSchema,
   quizShapeSchema,
 } from '@contracts/common.js';
+import {
+  addOptionsItemBodySchema,
+  addQuestionBodySchema,
+  createQuizBodySchema,
+  questionIdParamSchema,
+  quizIdParamSchema,
+  reorderQuestionBodySchema,
+  uuidParamSchema,
+} from '@contracts/schemas.js';
 
 const c = initContract();
 
@@ -21,7 +24,7 @@ export const quizContract = c.router(
       method: 'POST',
       path: '/quizzes',
       summary: 'Create a quiz',
-      body: createQuizSchema,
+      body: createQuizBodySchema,
       responses: {
         201: createSuccessResponseSchema(quizShapeSchema),
         401: errorResponseSchema,
@@ -33,7 +36,7 @@ export const quizContract = c.router(
       path: '/quizzes',
       summary: 'Get all quizzes',
       responses: {
-        200: createSuccessResponseSchema(z.array(quizShapeSchema)),
+        200: createSuccessResponseSchema(z.array(quizShapeSchema) as any),
       },
       metadata: { tags: ['Quiz'] },
     },
@@ -41,7 +44,7 @@ export const quizContract = c.router(
       method: 'GET',
       path: '/quizzes/:id',
       summary: 'Get quiz by id',
-      pathParams: z.object({ id: z.uuid() }),
+      pathParams: uuidParamSchema,
       responses: {
         200: createSuccessResponseSchema(quizShapeSchema),
         404: errorResponseSchema,
@@ -52,8 +55,8 @@ export const quizContract = c.router(
       method: 'POST',
       path: '/quizzes/:quizId/questions',
       summary: 'Add question to quiz',
-      pathParams: z.object({ quizId: z.uuid() }),
-      body: addQuestionSchema,
+      pathParams: quizIdParamSchema,
+      body: addQuestionBodySchema,
       responses: {
         201: createSuccessResponseSchema(questionShapeSchema),
         401: errorResponseSchema,
@@ -64,8 +67,10 @@ export const quizContract = c.router(
       method: 'POST',
       path: '/quizzes/questions/:questionId/options',
       summary: 'Add options to question',
-      pathParams: z.object({ questionId: z.uuid() }),
-      body: z.array(addOptionsSchema),
+      pathParams: questionIdParamSchema,
+      body: z
+        .array(addOptionsItemBodySchema)
+        .default([addOptionsItemBodySchema.parse({})]) as any,
       responses: {
         201: createSuccessResponseSchema(z.unknown()),
       },
@@ -75,11 +80,8 @@ export const quizContract = c.router(
       method: 'PATCH',
       path: '/quizzes/:quizId/questions/:questionId/reorder',
       summary: 'Reorder a question inside a quiz',
-      pathParams: z.object({
-        quizId: z.uuid(),
-        questionId: z.uuid(),
-      }),
-      body: reorderQuestionSchema,
+      pathParams: quizIdParamSchema.merge(questionIdParamSchema),
+      body: reorderQuestionBodySchema,
       responses: {
         200: createSuccessResponseSchema(questionShapeSchema),
       },

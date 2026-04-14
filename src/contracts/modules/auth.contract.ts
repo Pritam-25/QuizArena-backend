@@ -1,11 +1,11 @@
 import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
-import { loginSchema, registerSchema } from '@modules/auth/auth.schema.js';
+import { z } from 'zod3';
 import {
   createSuccessResponseSchema,
   errorResponseSchema,
   userShapeSchema,
 } from '@contracts/common.js';
+import { loginBodySchema, registerBodySchema } from '@contracts/schemas.js';
 
 const c = initContract();
 
@@ -15,9 +15,11 @@ export const authContract = c.router(
       method: 'POST',
       path: '/auth/register',
       summary: 'Register a new user',
-      body: registerSchema,
+      body: registerBodySchema,
       responses: {
-        201: createSuccessResponseSchema(z.object({ user: userShapeSchema })),
+        201: createSuccessResponseSchema(
+          z.object({ user: userShapeSchema }) as any
+        ),
         409: errorResponseSchema,
       },
       metadata: { tags: ['Auth'] },
@@ -26,9 +28,11 @@ export const authContract = c.router(
       method: 'POST',
       path: '/auth/login',
       summary: 'Authenticate a user',
-      body: loginSchema,
+      body: loginBodySchema,
       responses: {
-        200: createSuccessResponseSchema(z.object({ user: userShapeSchema })),
+        200: createSuccessResponseSchema(
+          z.object({ user: userShapeSchema }) as any
+        ),
         401: errorResponseSchema,
       },
       metadata: { tags: ['Auth'] },
@@ -38,7 +42,9 @@ export const authContract = c.router(
       path: '/auth/me',
       summary: 'Get current authenticated user',
       responses: {
-        200: createSuccessResponseSchema(z.object({ user: userShapeSchema })),
+        200: createSuccessResponseSchema(
+          z.object({ user: userShapeSchema }) as any
+        ),
         401: errorResponseSchema,
       },
       metadata: { tags: ['Auth'] },

@@ -16,13 +16,23 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
+import type {
+  GetApiV1SessionsSessionId200,
+  GetApiV1SessionsSessionId404,
+  PostApiV1Sessions201,
+  PostApiV1SessionsBody,
+  PostApiV1SessionsJoin201,
+  PostApiV1SessionsJoinBody,
+  PostApiV1SessionsSessionIdStart200,
+} from '../model';
+
 import { customInstance } from '../../../shared/api/custom-instance';
 
 /**
  * @summary Create a live session
  */
 export type postApiV1SessionsResponse201 = {
-  data: unknown;
+  data: PostApiV1Sessions201;
   status: 201;
 };
 
@@ -36,7 +46,7 @@ export const getPostApiV1SessionsUrl = () => {
 };
 
 export const postApiV1Sessions = async (
-  postApiV1SessionsBody: unknown,
+  postApiV1SessionsBody: PostApiV1SessionsBody,
   options?: RequestInit
 ): Promise<postApiV1SessionsResponse> => {
   return customInstance<postApiV1SessionsResponse>(getPostApiV1SessionsUrl(), {
@@ -54,13 +64,13 @@ export const getPostApiV1SessionsMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1Sessions>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1SessionsBody },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postApiV1Sessions>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1SessionsBody },
   TContext
 > => {
   const mutationKey = ['postApiV1Sessions'];
@@ -74,7 +84,7 @@ export const getPostApiV1SessionsMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postApiV1Sessions>>,
-    { data: unknown }
+    { data: PostApiV1SessionsBody }
   > = props => {
     const { data } = props ?? {};
 
@@ -87,7 +97,7 @@ export const getPostApiV1SessionsMutationOptions = <
 export type PostApiV1SessionsMutationResult = NonNullable<
   Awaited<ReturnType<typeof postApiV1Sessions>>
 >;
-export type PostApiV1SessionsMutationBody = unknown;
+export type PostApiV1SessionsMutationBody = PostApiV1SessionsBody;
 export type PostApiV1SessionsMutationError = unknown;
 
 /**
@@ -100,13 +110,13 @@ export const usePostApiV1Sessions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1Sessions>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1SessionsBody },
     TContext
   >;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postApiV1Sessions>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1SessionsBody },
   TContext
 > => {
   return useMutation(getPostApiV1SessionsMutationOptions(options));
@@ -115,12 +125,12 @@ export const usePostApiV1Sessions = <
  * @summary Get session by id
  */
 export type getApiV1SessionsSessionIdResponse200 = {
-  data: unknown;
+  data: GetApiV1SessionsSessionId200;
   status: 200;
 };
 
 export type getApiV1SessionsSessionIdResponse404 = {
-  data: unknown;
+  data: GetApiV1SessionsSessionId404;
   status: 404;
 };
 
@@ -137,12 +147,12 @@ export type getApiV1SessionsSessionIdResponse =
   | getApiV1SessionsSessionIdResponseSuccess
   | getApiV1SessionsSessionIdResponseError;
 
-export const getGetApiV1SessionsSessionIdUrl = (sessionId: unknown) => {
+export const getGetApiV1SessionsSessionIdUrl = (sessionId: string) => {
   return `/api/v1/sessions/${sessionId}`;
 };
 
 export const getApiV1SessionsSessionId = async (
-  sessionId: unknown,
+  sessionId: string,
   options?: RequestInit
 ): Promise<getApiV1SessionsSessionIdResponse> => {
   return customInstance<getApiV1SessionsSessionIdResponse>(
@@ -154,15 +164,15 @@ export const getApiV1SessionsSessionId = async (
   );
 };
 
-export const getGetApiV1SessionsSessionIdQueryKey = (sessionId: unknown) => {
+export const getGetApiV1SessionsSessionIdQueryKey = (sessionId: string) => {
   return [`/api/v1/sessions/${sessionId}`] as const;
 };
 
 export const getGetApiV1SessionsSessionIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getApiV1SessionsSessionId>>,
-  TError = unknown,
+  TError = GetApiV1SessionsSessionId404,
 >(
-  sessionId: unknown,
+  sessionId: string,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof getApiV1SessionsSessionId>>,
@@ -195,7 +205,7 @@ export const getGetApiV1SessionsSessionIdQueryOptions = <
 export type GetApiV1SessionsSessionIdQueryResult = NonNullable<
   Awaited<ReturnType<typeof getApiV1SessionsSessionId>>
 >;
-export type GetApiV1SessionsSessionIdQueryError = unknown;
+export type GetApiV1SessionsSessionIdQueryError = GetApiV1SessionsSessionId404;
 
 /**
  * @summary Get session by id
@@ -203,9 +213,9 @@ export type GetApiV1SessionsSessionIdQueryError = unknown;
 
 export function useGetApiV1SessionsSessionId<
   TData = Awaited<ReturnType<typeof getApiV1SessionsSessionId>>,
-  TError = unknown,
+  TError = GetApiV1SessionsSessionId404,
 >(
-  sessionId: unknown,
+  sessionId: string,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof getApiV1SessionsSessionId>>,
@@ -230,7 +240,7 @@ export function useGetApiV1SessionsSessionId<
  * @summary Join a session by join code
  */
 export type postApiV1SessionsJoinResponse201 = {
-  data: unknown;
+  data: PostApiV1SessionsJoin201;
   status: 201;
 };
 
@@ -246,7 +256,7 @@ export const getPostApiV1SessionsJoinUrl = () => {
 };
 
 export const postApiV1SessionsJoin = async (
-  postApiV1SessionsJoinBody: unknown,
+  postApiV1SessionsJoinBody: PostApiV1SessionsJoinBody,
   options?: RequestInit
 ): Promise<postApiV1SessionsJoinResponse> => {
   return customInstance<postApiV1SessionsJoinResponse>(
@@ -267,13 +277,13 @@ export const getPostApiV1SessionsJoinMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1SessionsJoin>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1SessionsJoinBody },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postApiV1SessionsJoin>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1SessionsJoinBody },
   TContext
 > => {
   const mutationKey = ['postApiV1SessionsJoin'];
@@ -287,7 +297,7 @@ export const getPostApiV1SessionsJoinMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postApiV1SessionsJoin>>,
-    { data: unknown }
+    { data: PostApiV1SessionsJoinBody }
   > = props => {
     const { data } = props ?? {};
 
@@ -300,7 +310,7 @@ export const getPostApiV1SessionsJoinMutationOptions = <
 export type PostApiV1SessionsJoinMutationResult = NonNullable<
   Awaited<ReturnType<typeof postApiV1SessionsJoin>>
 >;
-export type PostApiV1SessionsJoinMutationBody = unknown;
+export type PostApiV1SessionsJoinMutationBody = PostApiV1SessionsJoinBody;
 export type PostApiV1SessionsJoinMutationError = unknown;
 
 /**
@@ -313,13 +323,13 @@ export const usePostApiV1SessionsJoin = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1SessionsJoin>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1SessionsJoinBody },
     TContext
   >;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postApiV1SessionsJoin>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1SessionsJoinBody },
   TContext
 > => {
   return useMutation(getPostApiV1SessionsJoinMutationOptions(options));
@@ -328,7 +338,7 @@ export const usePostApiV1SessionsJoin = <
  * @summary Start session
  */
 export type postApiV1SessionsSessionIdStartResponse200 = {
-  data: unknown;
+  data: PostApiV1SessionsSessionIdStart200;
   status: 200;
 };
 
@@ -339,12 +349,12 @@ export type postApiV1SessionsSessionIdStartResponseSuccess =
 export type postApiV1SessionsSessionIdStartResponse =
   postApiV1SessionsSessionIdStartResponseSuccess;
 
-export const getPostApiV1SessionsSessionIdStartUrl = (sessionId: unknown) => {
+export const getPostApiV1SessionsSessionIdStartUrl = (sessionId: string) => {
   return `/api/v1/sessions/${sessionId}/start`;
 };
 
 export const postApiV1SessionsSessionIdStart = async (
-  sessionId: unknown,
+  sessionId: string,
   options?: RequestInit
 ): Promise<postApiV1SessionsSessionIdStartResponse> => {
   return customInstance<postApiV1SessionsSessionIdStartResponse>(
@@ -363,13 +373,13 @@ export const getPostApiV1SessionsSessionIdStartMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1SessionsSessionIdStart>>,
     TError,
-    { sessionId: unknown },
+    { sessionId: string },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postApiV1SessionsSessionIdStart>>,
   TError,
-  { sessionId: unknown },
+  { sessionId: string },
   TContext
 > => {
   const mutationKey = ['postApiV1SessionsSessionIdStart'];
@@ -383,7 +393,7 @@ export const getPostApiV1SessionsSessionIdStartMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postApiV1SessionsSessionIdStart>>,
-    { sessionId: unknown }
+    { sessionId: string }
   > = props => {
     const { sessionId } = props ?? {};
 
@@ -409,13 +419,13 @@ export const usePostApiV1SessionsSessionIdStart = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1SessionsSessionIdStart>>,
     TError,
-    { sessionId: unknown },
+    { sessionId: string },
     TContext
   >;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postApiV1SessionsSessionIdStart>>,
   TError,
-  { sessionId: unknown },
+  { sessionId: string },
   TContext
 > => {
   return useMutation(

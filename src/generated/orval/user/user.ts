@@ -16,13 +16,20 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
+import type {
+  GetApiV1UsersId200,
+  GetApiV1UsersId404,
+  PostApiV1Users201,
+  PostApiV1UsersBody,
+} from '../model';
+
 import { customInstance } from '../../../shared/api/custom-instance';
 
 /**
  * @summary Create user
  */
 export type postApiV1UsersResponse201 = {
-  data: unknown;
+  data: PostApiV1Users201;
   status: 201;
 };
 
@@ -36,7 +43,7 @@ export const getPostApiV1UsersUrl = () => {
 };
 
 export const postApiV1Users = async (
-  postApiV1UsersBody: unknown,
+  postApiV1UsersBody: PostApiV1UsersBody,
   options?: RequestInit
 ): Promise<postApiV1UsersResponse> => {
   return customInstance<postApiV1UsersResponse>(getPostApiV1UsersUrl(), {
@@ -54,13 +61,13 @@ export const getPostApiV1UsersMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1Users>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1UsersBody },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postApiV1Users>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1UsersBody },
   TContext
 > => {
   const mutationKey = ['postApiV1Users'];
@@ -74,7 +81,7 @@ export const getPostApiV1UsersMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postApiV1Users>>,
-    { data: unknown }
+    { data: PostApiV1UsersBody }
   > = props => {
     const { data } = props ?? {};
 
@@ -87,7 +94,7 @@ export const getPostApiV1UsersMutationOptions = <
 export type PostApiV1UsersMutationResult = NonNullable<
   Awaited<ReturnType<typeof postApiV1Users>>
 >;
-export type PostApiV1UsersMutationBody = unknown;
+export type PostApiV1UsersMutationBody = PostApiV1UsersBody;
 export type PostApiV1UsersMutationError = unknown;
 
 /**
@@ -100,13 +107,13 @@ export const usePostApiV1Users = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1Users>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1UsersBody },
     TContext
   >;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postApiV1Users>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1UsersBody },
   TContext
 > => {
   return useMutation(getPostApiV1UsersMutationOptions(options));
@@ -115,12 +122,12 @@ export const usePostApiV1Users = <
  * @summary Get user by id
  */
 export type getApiV1UsersIdResponse200 = {
-  data: unknown;
+  data: GetApiV1UsersId200;
   status: 200;
 };
 
 export type getApiV1UsersIdResponse404 = {
-  data: unknown;
+  data: GetApiV1UsersId404;
   status: 404;
 };
 
@@ -135,12 +142,12 @@ export type getApiV1UsersIdResponse =
   | getApiV1UsersIdResponseSuccess
   | getApiV1UsersIdResponseError;
 
-export const getGetApiV1UsersIdUrl = (id: unknown) => {
+export const getGetApiV1UsersIdUrl = (id: string) => {
   return `/api/v1/users/${id}`;
 };
 
 export const getApiV1UsersId = async (
-  id: unknown,
+  id: string,
   options?: RequestInit
 ): Promise<getApiV1UsersIdResponse> => {
   return customInstance<getApiV1UsersIdResponse>(getGetApiV1UsersIdUrl(id), {
@@ -149,15 +156,15 @@ export const getApiV1UsersId = async (
   });
 };
 
-export const getGetApiV1UsersIdQueryKey = (id: unknown) => {
+export const getGetApiV1UsersIdQueryKey = (id: string) => {
   return [`/api/v1/users/${id}`] as const;
 };
 
 export const getGetApiV1UsersIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getApiV1UsersId>>,
-  TError = unknown,
+  TError = GetApiV1UsersId404,
 >(
-  id: unknown,
+  id: string,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof getApiV1UsersId>>,
@@ -189,7 +196,7 @@ export const getGetApiV1UsersIdQueryOptions = <
 export type GetApiV1UsersIdQueryResult = NonNullable<
   Awaited<ReturnType<typeof getApiV1UsersId>>
 >;
-export type GetApiV1UsersIdQueryError = unknown;
+export type GetApiV1UsersIdQueryError = GetApiV1UsersId404;
 
 /**
  * @summary Get user by id
@@ -197,9 +204,9 @@ export type GetApiV1UsersIdQueryError = unknown;
 
 export function useGetApiV1UsersId<
   TData = Awaited<ReturnType<typeof getApiV1UsersId>>,
-  TError = unknown,
+  TError = GetApiV1UsersId404,
 >(
-  id: unknown,
+  id: string,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof getApiV1UsersId>>,

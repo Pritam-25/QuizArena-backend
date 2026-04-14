@@ -16,18 +16,34 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
+import type {
+  GetApiV1Quizzes200,
+  GetApiV1QuizzesId200,
+  GetApiV1QuizzesId404,
+  PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorder200,
+  PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderBody,
+  PostApiV1Quizzes201,
+  PostApiV1Quizzes401,
+  PostApiV1QuizzesBody,
+  PostApiV1QuizzesQuestionsQuestionIdOptions201,
+  PostApiV1QuizzesQuestionsQuestionIdOptionsBodyItem,
+  PostApiV1QuizzesQuizIdQuestions201,
+  PostApiV1QuizzesQuizIdQuestions401,
+  PostApiV1QuizzesQuizIdQuestionsBody,
+} from '../model';
+
 import { customInstance } from '../../../shared/api/custom-instance';
 
 /**
  * @summary Create a quiz
  */
 export type postApiV1QuizzesResponse201 = {
-  data: unknown;
+  data: PostApiV1Quizzes201;
   status: 201;
 };
 
 export type postApiV1QuizzesResponse401 = {
-  data: unknown;
+  data: PostApiV1Quizzes401;
   status: 401;
 };
 
@@ -47,7 +63,7 @@ export const getPostApiV1QuizzesUrl = () => {
 };
 
 export const postApiV1Quizzes = async (
-  postApiV1QuizzesBody: unknown,
+  postApiV1QuizzesBody: PostApiV1QuizzesBody,
   options?: RequestInit
 ): Promise<postApiV1QuizzesResponse> => {
   return customInstance<postApiV1QuizzesResponse>(getPostApiV1QuizzesUrl(), {
@@ -59,19 +75,19 @@ export const postApiV1Quizzes = async (
 };
 
 export const getPostApiV1QuizzesMutationOptions = <
-  TError = unknown,
+  TError = PostApiV1Quizzes401,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1Quizzes>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1QuizzesBody },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postApiV1Quizzes>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1QuizzesBody },
   TContext
 > => {
   const mutationKey = ['postApiV1Quizzes'];
@@ -85,7 +101,7 @@ export const getPostApiV1QuizzesMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postApiV1Quizzes>>,
-    { data: unknown }
+    { data: PostApiV1QuizzesBody }
   > = props => {
     const { data } = props ?? {};
 
@@ -98,26 +114,26 @@ export const getPostApiV1QuizzesMutationOptions = <
 export type PostApiV1QuizzesMutationResult = NonNullable<
   Awaited<ReturnType<typeof postApiV1Quizzes>>
 >;
-export type PostApiV1QuizzesMutationBody = unknown;
-export type PostApiV1QuizzesMutationError = unknown;
+export type PostApiV1QuizzesMutationBody = PostApiV1QuizzesBody;
+export type PostApiV1QuizzesMutationError = PostApiV1Quizzes401;
 
 /**
  * @summary Create a quiz
  */
 export const usePostApiV1Quizzes = <
-  TError = unknown,
+  TError = PostApiV1Quizzes401,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1Quizzes>>,
     TError,
-    { data: unknown },
+    { data: PostApiV1QuizzesBody },
     TContext
   >;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postApiV1Quizzes>>,
   TError,
-  { data: unknown },
+  { data: PostApiV1QuizzesBody },
   TContext
 > => {
   return useMutation(getPostApiV1QuizzesMutationOptions(options));
@@ -126,7 +142,7 @@ export const usePostApiV1Quizzes = <
  * @summary Get all quizzes
  */
 export type getApiV1QuizzesResponse200 = {
-  data: unknown;
+  data: GetApiV1Quizzes200;
   status: 200;
 };
 
@@ -209,12 +225,12 @@ export function useGetApiV1Quizzes<
  * @summary Get quiz by id
  */
 export type getApiV1QuizzesIdResponse200 = {
-  data: unknown;
+  data: GetApiV1QuizzesId200;
   status: 200;
 };
 
 export type getApiV1QuizzesIdResponse404 = {
-  data: unknown;
+  data: GetApiV1QuizzesId404;
   status: 404;
 };
 
@@ -229,12 +245,12 @@ export type getApiV1QuizzesIdResponse =
   | getApiV1QuizzesIdResponseSuccess
   | getApiV1QuizzesIdResponseError;
 
-export const getGetApiV1QuizzesIdUrl = (id: unknown) => {
+export const getGetApiV1QuizzesIdUrl = (id: string) => {
   return `/api/v1/quizzes/${id}`;
 };
 
 export const getApiV1QuizzesId = async (
-  id: unknown,
+  id: string,
   options?: RequestInit
 ): Promise<getApiV1QuizzesIdResponse> => {
   return customInstance<getApiV1QuizzesIdResponse>(
@@ -246,15 +262,15 @@ export const getApiV1QuizzesId = async (
   );
 };
 
-export const getGetApiV1QuizzesIdQueryKey = (id: unknown) => {
+export const getGetApiV1QuizzesIdQueryKey = (id: string) => {
   return [`/api/v1/quizzes/${id}`] as const;
 };
 
 export const getGetApiV1QuizzesIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getApiV1QuizzesId>>,
-  TError = unknown,
+  TError = GetApiV1QuizzesId404,
 >(
-  id: unknown,
+  id: string,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof getApiV1QuizzesId>>,
@@ -286,7 +302,7 @@ export const getGetApiV1QuizzesIdQueryOptions = <
 export type GetApiV1QuizzesIdQueryResult = NonNullable<
   Awaited<ReturnType<typeof getApiV1QuizzesId>>
 >;
-export type GetApiV1QuizzesIdQueryError = unknown;
+export type GetApiV1QuizzesIdQueryError = GetApiV1QuizzesId404;
 
 /**
  * @summary Get quiz by id
@@ -294,9 +310,9 @@ export type GetApiV1QuizzesIdQueryError = unknown;
 
 export function useGetApiV1QuizzesId<
   TData = Awaited<ReturnType<typeof getApiV1QuizzesId>>,
-  TError = unknown,
+  TError = GetApiV1QuizzesId404,
 >(
-  id: unknown,
+  id: string,
   options?: {
     query?: UseQueryOptions<
       Awaited<ReturnType<typeof getApiV1QuizzesId>>,
@@ -318,12 +334,12 @@ export function useGetApiV1QuizzesId<
  * @summary Add question to quiz
  */
 export type postApiV1QuizzesQuizIdQuestionsResponse201 = {
-  data: unknown;
+  data: PostApiV1QuizzesQuizIdQuestions201;
   status: 201;
 };
 
 export type postApiV1QuizzesQuizIdQuestionsResponse401 = {
-  data: unknown;
+  data: PostApiV1QuizzesQuizIdQuestions401;
   status: 401;
 };
 
@@ -340,13 +356,13 @@ export type postApiV1QuizzesQuizIdQuestionsResponse =
   | postApiV1QuizzesQuizIdQuestionsResponseSuccess
   | postApiV1QuizzesQuizIdQuestionsResponseError;
 
-export const getPostApiV1QuizzesQuizIdQuestionsUrl = (quizId: unknown) => {
+export const getPostApiV1QuizzesQuizIdQuestionsUrl = (quizId: string) => {
   return `/api/v1/quizzes/${quizId}/questions`;
 };
 
 export const postApiV1QuizzesQuizIdQuestions = async (
-  quizId: unknown,
-  postApiV1QuizzesQuizIdQuestionsBody: unknown,
+  quizId: string,
+  postApiV1QuizzesQuizIdQuestionsBody: PostApiV1QuizzesQuizIdQuestionsBody,
   options?: RequestInit
 ): Promise<postApiV1QuizzesQuizIdQuestionsResponse> => {
   return customInstance<postApiV1QuizzesQuizIdQuestionsResponse>(
@@ -361,19 +377,19 @@ export const postApiV1QuizzesQuizIdQuestions = async (
 };
 
 export const getPostApiV1QuizzesQuizIdQuestionsMutationOptions = <
-  TError = unknown,
+  TError = PostApiV1QuizzesQuizIdQuestions401,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1QuizzesQuizIdQuestions>>,
     TError,
-    { quizId: unknown; data: unknown },
+    { quizId: string; data: PostApiV1QuizzesQuizIdQuestionsBody },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postApiV1QuizzesQuizIdQuestions>>,
   TError,
-  { quizId: unknown; data: unknown },
+  { quizId: string; data: PostApiV1QuizzesQuizIdQuestionsBody },
   TContext
 > => {
   const mutationKey = ['postApiV1QuizzesQuizIdQuestions'];
@@ -387,7 +403,7 @@ export const getPostApiV1QuizzesQuizIdQuestionsMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postApiV1QuizzesQuizIdQuestions>>,
-    { quizId: unknown; data: unknown }
+    { quizId: string; data: PostApiV1QuizzesQuizIdQuestionsBody }
   > = props => {
     const { quizId, data } = props ?? {};
 
@@ -400,26 +416,28 @@ export const getPostApiV1QuizzesQuizIdQuestionsMutationOptions = <
 export type PostApiV1QuizzesQuizIdQuestionsMutationResult = NonNullable<
   Awaited<ReturnType<typeof postApiV1QuizzesQuizIdQuestions>>
 >;
-export type PostApiV1QuizzesQuizIdQuestionsMutationBody = unknown;
-export type PostApiV1QuizzesQuizIdQuestionsMutationError = unknown;
+export type PostApiV1QuizzesQuizIdQuestionsMutationBody =
+  PostApiV1QuizzesQuizIdQuestionsBody;
+export type PostApiV1QuizzesQuizIdQuestionsMutationError =
+  PostApiV1QuizzesQuizIdQuestions401;
 
 /**
  * @summary Add question to quiz
  */
 export const usePostApiV1QuizzesQuizIdQuestions = <
-  TError = unknown,
+  TError = PostApiV1QuizzesQuizIdQuestions401,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1QuizzesQuizIdQuestions>>,
     TError,
-    { quizId: unknown; data: unknown },
+    { quizId: string; data: PostApiV1QuizzesQuizIdQuestionsBody },
     TContext
   >;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postApiV1QuizzesQuizIdQuestions>>,
   TError,
-  { quizId: unknown; data: unknown },
+  { quizId: string; data: PostApiV1QuizzesQuizIdQuestionsBody },
   TContext
 > => {
   return useMutation(
@@ -430,7 +448,7 @@ export const usePostApiV1QuizzesQuizIdQuestions = <
  * @summary Add options to question
  */
 export type postApiV1QuizzesQuestionsQuestionIdOptionsResponse201 = {
-  data: unknown;
+  data: PostApiV1QuizzesQuestionsQuestionIdOptions201;
   status: 201;
 };
 
@@ -442,14 +460,14 @@ export type postApiV1QuizzesQuestionsQuestionIdOptionsResponse =
   postApiV1QuizzesQuestionsQuestionIdOptionsResponseSuccess;
 
 export const getPostApiV1QuizzesQuestionsQuestionIdOptionsUrl = (
-  questionId: unknown
+  questionId: string
 ) => {
   return `/api/v1/quizzes/questions/${questionId}/options`;
 };
 
 export const postApiV1QuizzesQuestionsQuestionIdOptions = async (
-  questionId: unknown,
-  postApiV1QuizzesQuestionsQuestionIdOptionsBody: unknown,
+  questionId: string,
+  postApiV1QuizzesQuestionsQuestionIdOptionsBodyItem: PostApiV1QuizzesQuestionsQuestionIdOptionsBodyItem[],
   options?: RequestInit
 ): Promise<postApiV1QuizzesQuestionsQuestionIdOptionsResponse> => {
   return customInstance<postApiV1QuizzesQuestionsQuestionIdOptionsResponse>(
@@ -458,7 +476,7 @@ export const postApiV1QuizzesQuestionsQuestionIdOptions = async (
       ...options,
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...options?.headers },
-      body: JSON.stringify(postApiV1QuizzesQuestionsQuestionIdOptionsBody),
+      body: JSON.stringify(postApiV1QuizzesQuestionsQuestionIdOptionsBodyItem),
     }
   );
 };
@@ -470,13 +488,19 @@ export const getPostApiV1QuizzesQuestionsQuestionIdOptionsMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1QuizzesQuestionsQuestionIdOptions>>,
     TError,
-    { questionId: unknown; data: unknown },
+    {
+      questionId: string;
+      data: PostApiV1QuizzesQuestionsQuestionIdOptionsBodyItem[];
+    },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof postApiV1QuizzesQuestionsQuestionIdOptions>>,
   TError,
-  { questionId: unknown; data: unknown },
+  {
+    questionId: string;
+    data: PostApiV1QuizzesQuestionsQuestionIdOptionsBodyItem[];
+  },
   TContext
 > => {
   const mutationKey = ['postApiV1QuizzesQuestionsQuestionIdOptions'];
@@ -490,7 +514,10 @@ export const getPostApiV1QuizzesQuestionsQuestionIdOptionsMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof postApiV1QuizzesQuestionsQuestionIdOptions>>,
-    { questionId: unknown; data: unknown }
+    {
+      questionId: string;
+      data: PostApiV1QuizzesQuestionsQuestionIdOptionsBodyItem[];
+    }
   > = props => {
     const { questionId, data } = props ?? {};
 
@@ -504,7 +531,8 @@ export type PostApiV1QuizzesQuestionsQuestionIdOptionsMutationResult =
   NonNullable<
     Awaited<ReturnType<typeof postApiV1QuizzesQuestionsQuestionIdOptions>>
   >;
-export type PostApiV1QuizzesQuestionsQuestionIdOptionsMutationBody = unknown;
+export type PostApiV1QuizzesQuestionsQuestionIdOptionsMutationBody =
+  PostApiV1QuizzesQuestionsQuestionIdOptionsBodyItem[];
 export type PostApiV1QuizzesQuestionsQuestionIdOptionsMutationError = unknown;
 
 /**
@@ -517,13 +545,19 @@ export const usePostApiV1QuizzesQuestionsQuestionIdOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof postApiV1QuizzesQuestionsQuestionIdOptions>>,
     TError,
-    { questionId: unknown; data: unknown },
+    {
+      questionId: string;
+      data: PostApiV1QuizzesQuestionsQuestionIdOptionsBodyItem[];
+    },
     TContext
   >;
 }): UseMutationResult<
   Awaited<ReturnType<typeof postApiV1QuizzesQuestionsQuestionIdOptions>>,
   TError,
-  { questionId: unknown; data: unknown },
+  {
+    questionId: string;
+    data: PostApiV1QuizzesQuestionsQuestionIdOptionsBodyItem[];
+  },
   TContext
 > => {
   return useMutation(
@@ -534,7 +568,7 @@ export const usePostApiV1QuizzesQuestionsQuestionIdOptions = <
  * @summary Reorder a question inside a quiz
  */
 export type patchApiV1QuizzesQuizIdQuestionsQuestionIdReorderResponse200 = {
-  data: unknown;
+  data: PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorder200;
   status: 200;
 };
 
@@ -546,16 +580,16 @@ export type patchApiV1QuizzesQuizIdQuestionsQuestionIdReorderResponse =
   patchApiV1QuizzesQuizIdQuestionsQuestionIdReorderResponseSuccess;
 
 export const getPatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderUrl = (
-  quizId: unknown,
-  questionId: unknown
+  quizId: string,
+  questionId: string
 ) => {
   return `/api/v1/quizzes/${quizId}/questions/${questionId}/reorder`;
 };
 
 export const patchApiV1QuizzesQuizIdQuestionsQuestionIdReorder = async (
-  quizId: unknown,
-  questionId: unknown,
-  patchApiV1QuizzesQuizIdQuestionsQuestionIdReorderBody: unknown,
+  quizId: string,
+  questionId: string,
+  patchApiV1QuizzesQuizIdQuestionsQuestionIdReorderBody: PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderBody,
   options?: RequestInit
 ): Promise<patchApiV1QuizzesQuizIdQuestionsQuestionIdReorderResponse> => {
   return customInstance<patchApiV1QuizzesQuizIdQuestionsQuestionIdReorderResponse>(
@@ -578,7 +612,11 @@ export const getPatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderMutationOptions
         ReturnType<typeof patchApiV1QuizzesQuizIdQuestionsQuestionIdReorder>
       >,
       TError,
-      { quizId: unknown; questionId: unknown; data: unknown },
+      {
+        quizId: string;
+        questionId: string;
+        data: PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderBody;
+      },
       TContext
     >;
   }): UseMutationOptions<
@@ -586,7 +624,11 @@ export const getPatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderMutationOptions
       ReturnType<typeof patchApiV1QuizzesQuizIdQuestionsQuestionIdReorder>
     >,
     TError,
-    { quizId: unknown; questionId: unknown; data: unknown },
+    {
+      quizId: string;
+      questionId: string;
+      data: PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderBody;
+    },
     TContext
   > => {
     const mutationKey = ['patchApiV1QuizzesQuizIdQuestionsQuestionIdReorder'];
@@ -602,7 +644,11 @@ export const getPatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderMutationOptions
       Awaited<
         ReturnType<typeof patchApiV1QuizzesQuizIdQuestionsQuestionIdReorder>
       >,
-      { quizId: unknown; questionId: unknown; data: unknown }
+      {
+        quizId: string;
+        questionId: string;
+        data: PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderBody;
+      }
     > = props => {
       const { quizId, questionId, data } = props ?? {};
 
@@ -623,7 +669,7 @@ export type PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderMutationResult =
     >
   >;
 export type PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderMutationBody =
-  unknown;
+  PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderBody;
 export type PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderMutationError =
   unknown;
 
@@ -639,13 +685,21 @@ export const usePatchApiV1QuizzesQuizIdQuestionsQuestionIdReorder = <
       ReturnType<typeof patchApiV1QuizzesQuizIdQuestionsQuestionIdReorder>
     >,
     TError,
-    { quizId: unknown; questionId: unknown; data: unknown },
+    {
+      quizId: string;
+      questionId: string;
+      data: PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderBody;
+    },
     TContext
   >;
 }): UseMutationResult<
   Awaited<ReturnType<typeof patchApiV1QuizzesQuizIdQuestionsQuestionIdReorder>>,
   TError,
-  { quizId: unknown; questionId: unknown; data: unknown },
+  {
+    quizId: string;
+    questionId: string;
+    data: PatchApiV1QuizzesQuizIdQuestionsQuestionIdReorderBody;
+  },
   TContext
 > => {
   return useMutation(

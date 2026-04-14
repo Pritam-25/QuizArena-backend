@@ -1,6 +1,6 @@
 import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
-import { createUserSchema } from '@modules/user/user.schema.js';
+import { z } from 'zod3';
+import { createUserBodySchema, uuidParamSchema } from '@contracts/schemas.js';
 
 const c = initContract();
 
@@ -10,12 +10,14 @@ export const userContract = c.router(
       method: 'POST',
       path: '/users',
       summary: 'Create user',
-      body: createUserSchema,
+      body: createUserBodySchema,
       responses: {
-        201: z.object({
-          message: z.string(),
-          data: z.unknown(),
-        }),
+        201: z
+          .object({
+            message: z.string(),
+            data: z.unknown(),
+          })
+          .passthrough() as any,
       },
       metadata: { tags: ['User'] },
     },
@@ -23,15 +25,19 @@ export const userContract = c.router(
       method: 'GET',
       path: '/users/:id',
       summary: 'Get user by id',
-      pathParams: z.object({ id: z.uuid() }),
+      pathParams: uuidParamSchema,
       responses: {
-        200: z.object({
-          message: z.string(),
-          data: z.unknown(),
-        }),
-        404: z.object({
-          message: z.string(),
-        }),
+        200: z
+          .object({
+            message: z.string(),
+            data: z.unknown(),
+          })
+          .passthrough() as any,
+        404: z
+          .object({
+            message: z.string(),
+          })
+          .passthrough() as any,
       },
       metadata: { tags: ['User'] },
     },

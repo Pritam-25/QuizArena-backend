@@ -1,14 +1,15 @@
 import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
-import {
-  createSessionSchema,
-  joinSessionSchema,
-} from '@modules/session/session.schema.js';
+import { z } from 'zod3';
 import {
   createSuccessResponseSchema,
   errorResponseSchema,
   sessionShapeSchema,
 } from '@contracts/common.js';
+import {
+  createSessionBodySchema,
+  joinSessionBodySchema,
+  sessionIdParamSchema,
+} from '@contracts/schemas.js';
 
 const c = initContract();
 
@@ -18,7 +19,7 @@ export const sessionContract = c.router(
       method: 'POST',
       path: '/sessions',
       summary: 'Create a live session',
-      body: createSessionSchema,
+      body: createSessionBodySchema,
       responses: {
         201: createSuccessResponseSchema(sessionShapeSchema),
       },
@@ -28,7 +29,7 @@ export const sessionContract = c.router(
       method: 'GET',
       path: '/sessions/:sessionId',
       summary: 'Get session by id',
-      pathParams: z.object({ sessionId: z.uuid() }),
+      pathParams: sessionIdParamSchema,
       responses: {
         200: createSuccessResponseSchema(sessionShapeSchema),
         404: errorResponseSchema,
@@ -39,7 +40,7 @@ export const sessionContract = c.router(
       method: 'POST',
       path: '/sessions/join',
       summary: 'Join a session by join code',
-      body: joinSessionSchema,
+      body: joinSessionBodySchema,
       responses: {
         201: createSuccessResponseSchema(z.unknown()),
       },
@@ -49,7 +50,7 @@ export const sessionContract = c.router(
       method: 'POST',
       path: '/sessions/:sessionId/start',
       summary: 'Start session',
-      pathParams: z.object({ sessionId: z.uuid() }),
+      pathParams: sessionIdParamSchema,
       body: c.noBody(),
       responses: {
         200: createSuccessResponseSchema(sessionShapeSchema),

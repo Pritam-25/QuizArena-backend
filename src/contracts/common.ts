@@ -1,8 +1,8 @@
-import { z } from 'zod';
+import { z } from 'zod3';
 
 export const metaSchema = z.record(z.string(), z.unknown()).optional();
 
-export const errorResponseSchema = z.object({
+export const errorResponseSchema: any = z.object({
   success: z.literal(false),
   error: z.object({
     statusCode: z.number().int(),
@@ -13,7 +13,7 @@ export const errorResponseSchema = z.object({
   meta: metaSchema,
 });
 
-export const createSuccessResponseSchema = (dataSchema: z.ZodTypeAny) =>
+export const createSuccessResponseSchema = (dataSchema: any): any =>
   z.object({
     success: z.literal(true),
     message: z.string(),
@@ -21,32 +21,32 @@ export const createSuccessResponseSchema = (dataSchema: z.ZodTypeAny) =>
     meta: metaSchema,
   });
 
-export const userShapeSchema = z.object({
-  id: z.uuid(),
+export const userShapeSchema: any = z.object({
+  id: z.string().uuid(),
   username: z.string(),
-  email: z.email(),
+  email: z.string().email(),
 });
 
-export const quizShapeSchema = z.object({
-  id: z.uuid(),
+export const quizShapeSchema: any = z.object({
+  id: z.string().uuid(),
   title: z.string(),
   description: z.string().nullable().optional(),
   isPublished: z.boolean(),
   createdBy: z.string(),
 });
 
-export const questionShapeSchema = z.object({
-  id: z.uuid(),
-  quizId: z.uuid(),
+export const questionShapeSchema: any = z.object({
+  id: z.string().uuid(),
+  quizId: z.string().uuid(),
   questionText: z.string(),
   type: z.string(),
   timeLimit: z.number().int(),
   points: z.number().int(),
 });
 
-export const sessionShapeSchema = z.object({
-  id: z.uuid(),
-  quizId: z.uuid(),
-  hostId: z.uuid(),
+export const sessionShapeSchema: any = z.object({
+  id: z.string().uuid(),
+  quizId: z.string().uuid(),
+  hostId: z.string().uuid(),
   status: z.string(),
 });
