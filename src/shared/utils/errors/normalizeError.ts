@@ -48,8 +48,9 @@ export const normalizeError = (error: unknown): ErrorContract => {
     return {
       statusCode: statusCode.internalError,
       errorCode: ERROR_CODES.INTERNAL_ERROR,
-      message: error.message || ERROR_MESSAGES.INTERNAL_ERROR,
+      message: ERROR_MESSAGES.INTERNAL_ERROR,
     };
+  }
   }
 
   if (typeof error === 'object' && error !== null) {
