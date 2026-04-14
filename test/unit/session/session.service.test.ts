@@ -5,7 +5,6 @@ import { SessionService } from '../../../src/modules/session/session.service.js'
 import type { SessionRepository } from '../../../src/modules/session/session.repository.js';
 import { ERROR_CODES } from '../../../src/shared/utils/errors/errorCodes.js';
 import { statusCode } from '../../../src/shared/utils/http/statusCodes.js';
-import * as errorUtils from '../../../src/shared/utils/errors/index.js';
 import * as sessionState from '../../../src/infrastructure/session.state.js';
 
 vi.mock('@infrastructure/session.state.js', () => ({
@@ -189,7 +188,7 @@ describe('SessionService', () => {
     });
   });
 
-  it('joinSession returns PARTICIPANT_NICKNAME_TAKEN on unique violation', async () => {
+  it('joinSession bubbles repository errors from addParticipant', async () => {
     const repo = buildRepoMock();
     const service = new SessionService(repo as unknown as SessionRepository);
 
@@ -201,17 +200,12 @@ describe('SessionService', () => {
     const dbError = new Error('unique');
     repo.addParticipant.mockRejectedValue(dbError);
 
-    vi.spyOn(errorUtils, 'isUniqueConstraintError').mockReturnValue(true);
-
     await expect(
       service.joinSession({
         joinCode: '123e4567-e89b-12d3-a456-426614174000',
         nickname: 'player-one',
       })
-    ).rejects.toMatchObject({
-      statusCode: statusCode.conflict,
-      errorCode: ERROR_CODES.PARTICIPANT_NICKNAME_TAKEN,
-    });
+    ).rejects.toBe(dbError);
   });
 
   it('joinSession returns participant payload on success', async () => {

@@ -1,10 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import {
-  ApiError,
-  ERROR_CODES,
-  isUniqueConstraintError,
-} from '@shared/utils/errors/index.js';
+import { ApiError, ERROR_CODES } from '@shared/utils/errors/index.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
 import { env } from '@config/env.js';
 import type { LoginDto, RegisterDto } from './auth.schema.js';
@@ -44,25 +40,11 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    let user;
-
-    try {
-      user = await this.repo.createUser({
-        username: data.username,
-        email: data.email,
-        password: hashedPassword,
-      });
-    } catch (error) {
-      if (isUniqueConstraintError(error)) {
-        throw new ApiError(
-          statusCode.conflict,
-          ERROR_CODES.USER_ALREADY_EXISTS,
-          'Email already in use'
-        );
-      }
-
-      throw error;
-    }
+    const user = await this.repo.createUser({
+      username: data.username,
+      email: data.email,
+      password: hashedPassword,
+    });
 
     const token = this.generateToken(user.id);
 

@@ -1,29 +1,35 @@
-import type { ApiError } from '@shared/utils/errors/index.js';
-import { getRequestId } from '@shared/utils/context/index.js';
-import { getTraceId } from '@shared/utils/context/index.js';
+import { normalizeError } from '@shared/utils/errors/index.js';
+import { createMeta } from './baseResponse.js';
 
-export const successResponse = <T>(message: string, data?: T) => ({
+export const successResponse = <T>(
+  message: string,
+  data?: T,
+  metaExtra?: Record<string, unknown>
+) => ({
   success: true as const,
   message,
   data,
-  meta: {
-    requestId: getRequestId(),
-    traceId: getTraceId(),
-  },
+  meta: createMeta(metaExtra),
 });
 
-export const errorResponse = <T>(error: ApiError) => ({
-  success: false as const,
-  error: {
-    statusCode: error.statusCode,
-    errorCode: error.errorCode,
-    message: error.message,
-    ...(error.statusCode < 500 && error.details
-      ? { details: error.details }
-      : {}),
-  },
-  meta: {
-    requestId: getRequestId(),
-    traceId: getTraceId(),
-  },
-});
+export const errorResponse = (
+  error: unknown,
+  metaExtra?: Record<string, unknown>
+) => {
+  const ErrorContract = normalizeError(error);
+
+  return {
+    success: false as const,
+    error: {
+      statusCode: ErrorContract.statusCode,
+      errorCode: ErrorContract.errorCode,
+      message: ErrorContract.message,
+      ...(ErrorContract.statusCode < 500 && ErrorContract.details
+        ? { details: ErrorContract.details }
+        : {}),
+    },
+    meta: createMeta(metaExtra),
+  };
+};
+
+export const buildErrorResponse = errorResponse;

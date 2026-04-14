@@ -1,12 +1,14 @@
 import type { ErrorCode } from './errorCodes.js';
 
 export const ERROR_MESSAGES: Record<ErrorCode, string> = {
+  CONFLICT: 'Conflict',
+  NOT_FOUND: 'Resource not found',
   USER_ALREADY_EXISTS: 'User already exists',
   UNAUTHORIZED: 'Unauthorized',
   FORBIDDEN: 'Forbidden',
   INVALID_TOKEN: 'Invalid token',
   INVALID_CREDENTIALS: 'Invalid email or password',
-  INVALID_INPUT: 'Invalid input',
+  INVALID_INPUT: 'Invalid Request body',
   REQUIRE_REQUEST_BODY: 'Request body is required',
   QUIZ_NOT_FOUND: 'Quiz not found',
   SESSION_NOT_FOUND: 'Session not found',

@@ -1,7 +1,7 @@
 import {
   ApiError,
   ERROR_CODES,
-  isUniqueConstraintError,
+  normalizeDbError,
 } from '@shared/utils/errors/index.js';
 import { QuizRepository } from './quiz.repository.js';
 import type {
@@ -133,7 +133,7 @@ export class QuizService {
 
         return await execute(order);
       } catch (error) {
-        if (!isUniqueConstraintError(error)) {
+        if (normalizeDbError(error) !== ERROR_CODES.DUPLICATE_QUESTION_ORDER) {
           throw error;
         }
       }
@@ -235,18 +235,7 @@ export class QuizService {
 
     validateQuestionOptions(question.type, data);
 
-    try {
-      return await this.repo.addOptionToQuestion(questionId, data);
-    } catch (error) {
-      if (isUniqueConstraintError(error)) {
-        throw new ApiError(
-          statusCode.badRequest,
-          ERROR_CODES.DUPLICATE_OPTIONS
-        );
-      }
-
-      throw error;
-    }
+    return this.repo.addOptionToQuestion(questionId, data);
   }
 
   /**

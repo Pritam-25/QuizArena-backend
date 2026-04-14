@@ -4,11 +4,7 @@ import {
   createSessionState,
 } from '@infrastructure/session.state.js';
 import logger from '@infrastructure/logger/logger.js';
-import {
-  ApiError,
-  ERROR_CODES,
-  isUniqueConstraintError,
-} from '@shared/utils/errors/index.js';
+import { ApiError, ERROR_CODES } from '@shared/utils/errors/index.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
 import type { SessionRepository } from './session.repository.js';
 import type {
@@ -111,20 +107,10 @@ export class SessionService {
       );
     }
 
-    let participant;
-
-    try {
-      participant = await this.repo.addParticipant(session.id, data.nickname);
-    } catch (error) {
-      if (isUniqueConstraintError(error)) {
-        throw new ApiError(
-          statusCode.conflict,
-          ERROR_CODES.PARTICIPANT_NICKNAME_TAKEN
-        );
-      }
-
-      throw error;
-    }
+    const participant = await this.repo.addParticipant(
+      session.id,
+      data.nickname
+    );
 
     try {
       await addPlayer(session.id, participant.id);

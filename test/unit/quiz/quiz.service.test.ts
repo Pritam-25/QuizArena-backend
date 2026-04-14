@@ -185,7 +185,7 @@ describe('QuizService', () => {
     });
   });
 
-  it('addOptionToQuestion maps unique violation to DUPLICATE_OPTIONS', async () => {
+  it('addOptionToQuestion bubbles repository errors', async () => {
     const repo = buildRepoMock();
     const service = new QuizService(repo as unknown as QuizRepository);
 
@@ -197,7 +197,6 @@ describe('QuizService', () => {
 
     const dbError = new Error('duplicate');
     repo.addOptionToQuestion.mockRejectedValue(dbError);
-    vi.spyOn(errorUtils, 'isUniqueConstraintError').mockReturnValue(true);
 
     await expect(
       service.addOptionToQuestion(
@@ -205,10 +204,7 @@ describe('QuizService', () => {
         [{ optionText: 'A', isCorrect: true }],
         'user-1'
       )
-    ).rejects.toMatchObject({
-      statusCode: statusCode.badRequest,
-      errorCode: ERROR_CODES.DUPLICATE_OPTIONS,
-    });
+    ).rejects.toBe(dbError);
   });
 
   it('addOptionToQuestion surfaces validation errors from validateQuestionOptions', async () => {
@@ -297,9 +293,9 @@ describe('QuizService', () => {
       .mockResolvedValueOnce('h')
       .mockResolvedValueOnce('i');
 
-    const uniqueSpy = vi
-      .spyOn(errorUtils, 'isUniqueConstraintError')
-      .mockReturnValue(true);
+    const normalizeDbErrorSpy = vi
+      .spyOn(errorUtils, 'normalizeDbError')
+      .mockReturnValue(ERROR_CODES.DUPLICATE_QUESTION_ORDER);
 
     const result = await service.reorderQuestionInQuiz(
       'quiz-1',
@@ -324,7 +320,7 @@ describe('QuizService', () => {
       })
     );
     expect(result.order).toBe('i');
-    uniqueSpy.mockRestore();
+    normalizeDbErrorSpy.mockRestore();
   });
 
   it('reorderQuestionInQuiz throws DUPLICATE_QUESTION_ORDER after retry exhaustion', async () => {
@@ -349,9 +345,9 @@ describe('QuizService', () => {
 
     repo.getNearestQuestionOrderAfter.mockResolvedValue({ order: 't' });
 
-    const uniqueSpy = vi
-      .spyOn(errorUtils, 'isUniqueConstraintError')
-      .mockReturnValue(true);
+    const normalizeDbErrorSpy = vi
+      .spyOn(errorUtils, 'normalizeDbError')
+      .mockReturnValue(ERROR_CODES.DUPLICATE_QUESTION_ORDER);
 
     await expect(
       service.reorderQuestionInQuiz('quiz-1', 'question-1', 'user-1', {
@@ -364,7 +360,7 @@ describe('QuizService', () => {
     });
 
     expect(repo.updateQuestionOrder).toHaveBeenCalledTimes(2);
-    uniqueSpy.mockRestore();
+    normalizeDbErrorSpy.mockRestore();
   });
 
   it('reorderQuestionInQuiz throws INVALID_ANCHOR when next token equals current order', async () => {
