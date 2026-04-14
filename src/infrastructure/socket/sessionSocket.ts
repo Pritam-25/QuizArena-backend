@@ -13,6 +13,11 @@ type StartSessionPayload = {
 
 const { service: sessionService } = createSessionModule();
 
+const getAuthenticatedUserId = (socket: Socket) => {
+  const userId = socket.data.userId;
+  return typeof userId === 'string' && userId.length > 0 ? userId : null;
+};
+
 /**
  * Registers session-scoped Socket.IO handlers for a newly connected socket.
  */
@@ -21,8 +26,11 @@ export const registerSessionSocketHandlers = (
   socket: Socket
 ) => {
   socket.on('session:join', async (payload: JoinSessionPayload) => {
+    const { joinCode, nickname } = payload;
+    const authenticatedUserId = getAuthenticatedUserId(socket);
+
     try {
-      const result = await sessionService.joinSession(payload);
+      const result = await sessionService.joinSession({ joinCode, nickname });
 
       socket.join(result.sessionId);
 
@@ -33,7 +41,9 @@ export const registerSessionSocketHandlers = (
       logger.warn(
         {
           socketId: socket.id,
-          payload,
+          actorType: authenticatedUserId ? 'authenticated' : 'guest',
+          authenticatedUserId,
+          payload: { joinCode, nickname },
           err: error,
         },
         'session:join handler failed'
@@ -42,10 +52,19 @@ export const registerSessionSocketHandlers = (
   });
 
   socket.on('session:start', async (payload: StartSessionPayload) => {
-    try {
-      const startedSession = await sessionService.startSession(
-        payload.sessionId
+    const authenticatedUserId = getAuthenticatedUserId(socket);
+    if (!authenticatedUserId) {
+      logger.warn(
+        { socketId: socket.id },
+        'Unauthorized session:start attempt'
       );
+      return;
+    }
+
+    const { sessionId } = payload;
+
+    try {
+      const startedSession = await sessionService.startSession(sessionId);
 
       io.to(startedSession.id).emit('session:started', {
         sessionId: startedSession.id,
@@ -54,7 +73,8 @@ export const registerSessionSocketHandlers = (
       logger.warn(
         {
           socketId: socket.id,
-          payload,
+          authenticatedUserId,
+          payload: { sessionId },
           err: error,
         },
         'session:start handler failed'
