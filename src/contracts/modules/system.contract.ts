@@ -1,0 +1,26 @@
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+import { createSuccessResponseSchema } from '@contracts/common.js';
+
+const c = initContract();
+
+export const systemContract = c.router(
+  {
+    healthCheck: {
+      method: 'GET',
+      path: '/health',
+      summary: 'Health check endpoint',
+      responses: {
+        200: createSuccessResponseSchema(
+          z.object({
+            status: z.literal('healthy'),
+            timestamp: z.string(),
+            uptime: z.number(),
+          })
+        ),
+      },
+      metadata: { tags: ['System'] },
+    },
+  },
+  { metadata: { tags: ['System'] } }
+);

@@ -51,7 +51,6 @@ export const normalizeError = (error: unknown): ErrorContract => {
       message: ERROR_MESSAGES.INTERNAL_ERROR,
     };
   }
-  }
 
   if (typeof error === 'object' && error !== null) {
     return {

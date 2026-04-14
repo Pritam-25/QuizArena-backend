@@ -14,6 +14,17 @@ export class AuthRepository {
   }
 
   /**
+   * Finds a user by id.
+   * @param id - User id
+   * @returns Matching user or null when not found
+   */
+  async findUserById(id: string) {
+    return prisma.user.findUnique({
+      where: { id },
+    });
+  }
+
+  /**
    * Creates a registered (non-guest) user.
    * @param data - User creation payload
    * @returns Created user record

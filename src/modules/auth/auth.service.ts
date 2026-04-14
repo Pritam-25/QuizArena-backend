@@ -79,4 +79,21 @@ export class AuthService {
 
     return toAuthResponseDto(user, token);
   }
+
+  /**
+   * Returns the currently authenticated user profile.
+   * @param userId - Authenticated user id
+   */
+  async me(userId: string) {
+    const user = await this.repo.findUserById(userId);
+    if (!user) {
+      throw new ApiError(statusCode.unauthorized, ERROR_CODES.UNAUTHORIZED);
+    }
+
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+    };
+  }
 }

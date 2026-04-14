@@ -39,6 +39,8 @@
       "@app/*": ["src/app/*"],
       "@config/*": ["src/config/*"],
       "@shared/*": ["src/shared/*"],
+      "@docs/*": ["src/docs/*"],
+      "@contracts/*": ["src/contracts/*"],
       "@monitoring/*": ["src/monitoring/*"],
       "@infrastructure/*": ["src/infrastructure/*"],
       "@modules/*": ["src/modules/*"],
@@ -53,9 +55,11 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
+  "include": ["src/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",
+    "src/generated/orval",
     "test",
     "prisma.config.ts",
     "vitest.config.ts"
