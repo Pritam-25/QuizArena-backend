@@ -77,6 +77,6 @@ export const createSessionBodySchema: any = z.object({
 });
 
 export const joinSessionBodySchema: any = z.object({
-  joinCode: z.string().uuid().default('123e4567-e89b-12d3-a456-426614174000'),
+  joinCode: z.string().min(1).default('123e4567-e89b-12d3-a456-426614174000'),
   nickname: z.string().min(1).max(30).default('PlayerOne'),
 });

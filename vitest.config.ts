@@ -22,6 +22,8 @@ export default defineConfig({
       '@app': path.resolve(rootDir, 'src/app'),
       '@config': path.resolve(rootDir, 'src/config'),
       '@shared': path.resolve(rootDir, 'src/shared'),
+      '@docs': path.resolve(rootDir, 'src/docs'),
+      '@contracts': path.resolve(rootDir, 'src/contracts'),
       '@monitoring': path.resolve(rootDir, 'src/monitoring'),
       '@infrastructure': path.resolve(rootDir, 'src/infrastructure'),
       '@modules': path.resolve(rootDir, 'src/modules'),
