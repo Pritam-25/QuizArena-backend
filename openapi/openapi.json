@@ -1,0 +1,1724 @@
+{
+  "openapi": "3.0.2",
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "summary": "Register a new user",
+        "tags": ["auth"],
+        "parameters": [],
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "default": "john_doe",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "email": {
+                    "default": "john@example.com",
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "default": "password123",
+                    "type": "string",
+                    "minLength": 6
+                  }
+                },
+                "example": {
+                  "username": "john_doe",
+                  "email": "john@example.com",
+                  "password": "password123"
+                }
+              },
+              "example": {
+                "username": "john_doe",
+                "email": "john@example.com",
+                "password": "password123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email"
+                            }
+                          },
+                          "required": ["id", "username", "email"]
+                        }
+                      },
+                      "required": ["user"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"],
+                  "example": {
+                    "success": true,
+                    "message": "Registration successful",
+                    "data": {
+                      "user": {
+                        "id": "123e4567-e89b-12d3-a456-426614174000",
+                        "username": "john_doe",
+                        "email": "john@example.com"
+                      }
+                    },
+                    "meta": {}
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "Registration successful",
+                  "data": {
+                    "user": {
+                      "id": "123e4567-e89b-12d3-a456-426614174000",
+                      "username": "john_doe",
+                      "email": "john@example.com"
+                    }
+                  },
+                  "meta": {}
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409 User already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [false]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "statusCode": {
+                          "type": "integer"
+                        },
+                        "errorCode": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "nullable": true
+                        }
+                      },
+                      "required": ["statusCode", "errorCode", "message"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "error"],
+                  "example": {
+                    "success": false,
+                    "error": {
+                      "statusCode": 409,
+                      "errorCode": "USER_ALREADY_EXISTS",
+                      "message": "User already exists"
+                    },
+                    "meta": {}
+                  }
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "statusCode": 409,
+                    "errorCode": "USER_ALREADY_EXISTS",
+                    "message": "User already exists"
+                  },
+                  "meta": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Authenticate a user",
+        "tags": ["auth"],
+        "parameters": [],
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "default": "john@example.com",
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "default": "password123",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "example": {
+                  "email": "john@example.com",
+                  "password": "password123"
+                }
+              },
+              "example": {
+                "email": "john@example.com",
+                "password": "password123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email"
+                            }
+                          },
+                          "required": ["id", "username", "email"]
+                        }
+                      },
+                      "required": ["user"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 Invalid email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [false]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "statusCode": {
+                          "type": "integer"
+                        },
+                        "errorCode": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "nullable": true
+                        }
+                      },
+                      "required": ["statusCode", "errorCode", "message"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "error"],
+                  "example": {
+                    "success": false,
+                    "error": {
+                      "statusCode": 401,
+                      "errorCode": "INVALID_CREDENTIALS",
+                      "message": "Invalid email or password"
+                    },
+                    "meta": {}
+                  }
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "statusCode": 401,
+                    "errorCode": "INVALID_CREDENTIALS",
+                    "message": "Invalid email or password"
+                  },
+                  "meta": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Get current authenticated user",
+        "tags": ["auth"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "user": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email"
+                            }
+                          },
+                          "required": ["id", "username", "email"]
+                        }
+                      },
+                      "required": ["user"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [false]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "statusCode": {
+                          "type": "integer"
+                        },
+                        "errorCode": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "nullable": true
+                        }
+                      },
+                      "required": ["statusCode", "errorCode", "message"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "error"],
+                  "example": {
+                    "success": false,
+                    "error": {
+                      "statusCode": 401,
+                      "errorCode": "UNAUTHORIZED",
+                      "message": "Unauthorized"
+                    },
+                    "meta": {}
+                  }
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "statusCode": 401,
+                    "errorCode": "UNAUTHORIZED",
+                    "message": "Unauthorized"
+                  },
+                  "meta": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "post": {
+        "summary": "Create user",
+        "tags": ["user"],
+        "parameters": [],
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "default": "guest_player",
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "username": "guest_player"
+                }
+              },
+              "example": {
+                "username": "guest_player"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true
+                    }
+                  },
+                  "required": ["message"],
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "summary": "Get user by id",
+        "tags": ["user"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true
+                    }
+                  },
+                  "required": ["message"],
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"],
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes": {
+      "post": {
+        "summary": "Create a quiz",
+        "tags": ["quiz"],
+        "parameters": [],
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "default": "General Knowledge Quiz",
+                    "type": "string",
+                    "minLength": 3
+                  },
+                  "description": {
+                    "default": "A mixed quiz for all players",
+                    "type": "string"
+                  },
+                  "isPublished": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "example": {
+                  "title": "General Knowledge Quiz",
+                  "description": "A mixed quiz for all players",
+                  "isPublished": false
+                }
+              },
+              "example": {
+                "title": "General Knowledge Quiz",
+                "description": "A mixed quiz for all players",
+                "isPublished": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "isPublished": {
+                          "type": "boolean"
+                        },
+                        "createdBy": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "title", "isPublished", "createdBy"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [false]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "statusCode": {
+                          "type": "integer"
+                        },
+                        "errorCode": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "nullable": true
+                        }
+                      },
+                      "required": ["statusCode", "errorCode", "message"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "error"],
+                  "example": {
+                    "success": false,
+                    "error": {
+                      "statusCode": 401,
+                      "errorCode": "UNAUTHORIZED",
+                      "message": "Unauthorized"
+                    },
+                    "meta": {}
+                  }
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "statusCode": 401,
+                    "errorCode": "UNAUTHORIZED",
+                    "message": "Unauthorized"
+                  },
+                  "meta": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all quizzes",
+        "tags": ["quiz"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "isPublished": {
+                            "type": "boolean"
+                          },
+                          "createdBy": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["id", "title", "isPublished", "createdBy"]
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes/{id}": {
+      "get": {
+        "summary": "Get quiz by id",
+        "tags": ["quiz"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "isPublished": {
+                          "type": "boolean"
+                        },
+                        "createdBy": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "title", "isPublished", "createdBy"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404 Quiz not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [false]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "statusCode": {
+                          "type": "integer"
+                        },
+                        "errorCode": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "nullable": true
+                        }
+                      },
+                      "required": ["statusCode", "errorCode", "message"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "error"],
+                  "example": {
+                    "success": false,
+                    "error": {
+                      "statusCode": 404,
+                      "errorCode": "QUIZ_NOT_FOUND",
+                      "message": "Quiz not found"
+                    },
+                    "meta": {}
+                  }
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "statusCode": 404,
+                    "errorCode": "QUIZ_NOT_FOUND",
+                    "message": "Quiz not found"
+                  },
+                  "meta": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes/{quizId}/questions": {
+      "post": {
+        "summary": "Add question to quiz",
+        "tags": ["quiz"],
+        "parameters": [
+          {
+            "name": "quizId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "questionText": {
+                    "default": "What is the capital of France?",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "default": "MCQ",
+                    "type": "string"
+                  },
+                  "timeLimit": {
+                    "default": 30,
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "points": {
+                    "default": 1,
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "prevOrder": {
+                    "default": "a",
+                    "type": "string",
+                    "pattern": "^[a-z]+$"
+                  },
+                  "nextOrder": {
+                    "default": "c",
+                    "type": "string",
+                    "pattern": "^[a-z]+$"
+                  }
+                },
+                "example": {
+                  "questionText": "What is the capital of France?",
+                  "type": "MCQ",
+                  "timeLimit": 30,
+                  "points": 1,
+                  "prevOrder": "a",
+                  "nextOrder": "c"
+                }
+              },
+              "example": {
+                "questionText": "What is the capital of France?",
+                "type": "MCQ",
+                "timeLimit": 30,
+                "points": 1,
+                "prevOrder": "a",
+                "nextOrder": "c"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quizId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "questionText": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "timeLimit": {
+                          "type": "integer"
+                        },
+                        "points": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "quizId",
+                        "questionText",
+                        "type",
+                        "timeLimit",
+                        "points"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [false]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "statusCode": {
+                          "type": "integer"
+                        },
+                        "errorCode": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "nullable": true
+                        }
+                      },
+                      "required": ["statusCode", "errorCode", "message"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "error"],
+                  "example": {
+                    "success": false,
+                    "error": {
+                      "statusCode": 401,
+                      "errorCode": "UNAUTHORIZED",
+                      "message": "Unauthorized"
+                    },
+                    "meta": {}
+                  }
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "statusCode": 401,
+                    "errorCode": "UNAUTHORIZED",
+                    "message": "Unauthorized"
+                  },
+                  "meta": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes/questions/{questionId}/options": {
+      "post": {
+        "summary": "Add options to question",
+        "tags": ["quiz"],
+        "parameters": [
+          {
+            "name": "questionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "default": [
+                  {
+                    "optionText": "Paris",
+                    "isCorrect": true
+                  }
+                ],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "optionText": {
+                      "default": "Paris",
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "isCorrect": {
+                      "default": true,
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "optionText": "Paris",
+                    "isCorrect": true
+                  },
+                  {
+                    "optionText": "Berlin",
+                    "isCorrect": false
+                  },
+                  {
+                    "optionText": "Madrid",
+                    "isCorrect": false
+                  }
+                ]
+              },
+              "example": [
+                {
+                  "optionText": "Paris",
+                  "isCorrect": true
+                },
+                {
+                  "optionText": "Berlin",
+                  "isCorrect": false
+                },
+                {
+                  "optionText": "Madrid",
+                  "isCorrect": false
+                }
+              ]
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes/{quizId}/questions/{questionId}/reorder": {
+      "patch": {
+        "summary": "Reorder a question inside a quiz",
+        "tags": ["quiz"],
+        "parameters": [
+          {
+            "name": "quizId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "questionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prevReorderToken": {
+                    "default": "a",
+                    "type": "string",
+                    "pattern": "^[a-z]+$"
+                  },
+                  "nextReorderToken": {
+                    "default": "c",
+                    "type": "string",
+                    "pattern": "^[a-z]+$"
+                  }
+                },
+                "example": {
+                  "prevReorderToken": "a",
+                  "nextReorderToken": "c"
+                }
+              },
+              "example": {
+                "prevReorderToken": "a",
+                "nextReorderToken": "c"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quizId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "questionText": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "timeLimit": {
+                          "type": "integer"
+                        },
+                        "points": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "quizId",
+                        "questionText",
+                        "type",
+                        "timeLimit",
+                        "points"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions": {
+      "post": {
+        "summary": "Create a live session",
+        "tags": ["session"],
+        "parameters": [],
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quizId": {
+                    "default": "11111111-1111-1111-1111-111111111111",
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "example": {
+                  "quizId": "11111111-1111-1111-1111-111111111111"
+                }
+              },
+              "example": {
+                "quizId": "11111111-1111-1111-1111-111111111111"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quizId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "hostId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "quizId", "hostId", "status"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sessionId}": {
+      "get": {
+        "summary": "Get session by id",
+        "tags": ["session"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quizId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "hostId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "quizId", "hostId", "status"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404 Session not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [false]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "statusCode": {
+                          "type": "integer"
+                        },
+                        "errorCode": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "nullable": true
+                        }
+                      },
+                      "required": ["statusCode", "errorCode", "message"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "error"],
+                  "example": {
+                    "success": false,
+                    "error": {
+                      "statusCode": 404,
+                      "errorCode": "SESSION_NOT_FOUND",
+                      "message": "Session not found"
+                    },
+                    "meta": {}
+                  }
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "statusCode": 404,
+                    "errorCode": "SESSION_NOT_FOUND",
+                    "message": "Session not found"
+                  },
+                  "meta": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/join": {
+      "post": {
+        "summary": "Join a session by join code",
+        "tags": ["session"],
+        "parameters": [],
+        "requestBody": {
+          "description": "Body",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "joinCode": {
+                    "default": "11111111-1111-1111-1111-111111111111",
+                    "type": "string"
+                  },
+                  "nickname": {
+                    "default": "PlayerOne",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 30
+                  }
+                },
+                "example": {
+                  "joinCode": "11111111-1111-1111-1111-111111111111",
+                  "nickname": "PlayerOne"
+                }
+              },
+              "example": {
+                "joinCode": "11111111-1111-1111-1111-111111111111",
+                "nickname": "PlayerOne"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "nullable": true
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{sessionId}/start": {
+      "post": {
+        "summary": "Start session",
+        "tags": ["session"],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quizId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "hostId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "quizId", "hostId", "status"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "tags": ["system"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["healthy"]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "uptime": {
+                          "type": "number"
+                        }
+                      },
+                      "required": ["status", "timestamp", "uptime"],
+                      "additionalProperties": true
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "Live Quiz Arena API",
+    "version": "1.0.0",
+    "description": "Versioned backend contract for auth, user, quiz, and session"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "sessionCookie": []
+    }
+  ]
+}

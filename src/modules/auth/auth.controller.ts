@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { statusCode, successResponse } from '@shared/utils/http/index.js';
 import { env } from '@config/env.js';
+import { getRequiredUserId } from '@shared/utils/context/index.js';
 import type { LoginDto, RegisterDto } from './auth.schema.js';
 import { AuthService } from './auth.service.js';
 import { AUTH_COOKIE_MAX_AGE_MS, AUTH_COOKIE_NAME } from './auth.constants.js';
@@ -59,6 +60,22 @@ export class AuthController {
     return res.status(statusCode.success).json(
       successResponse('Login successful', {
         user: authResult.user,
+      })
+    );
+  }
+
+  /**
+   * Returns the current authenticated user.
+   * @param req - Express request
+   * @param res - Express response
+   */
+  async me(req: Request, res: Response) {
+    const userId = getRequiredUserId(req);
+    const user = await this.service.me(userId);
+
+    return res.status(statusCode.success).json(
+      successResponse('Current user fetched successfully', {
+        user,
       })
     );
   }
