@@ -1709,16 +1709,16 @@
   ],
   "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "auth_token"
       }
     }
   },
   "security": [
     {
-      "bearerAuth": []
+      "sessionCookie": []
     }
   ]
 }

@@ -1,7 +1,8 @@
 export const customInstance = async <T>(
-  config: RequestInit & { url: string }
+  url: string,
+  config: RequestInit = {}
 ): Promise<T> => {
-  const response = await fetch(config.url, {
+  const response = await fetch(url, {
     ...config,
     headers: {
       'Content-Type': 'application/json',
@@ -13,6 +14,10 @@ export const customInstance = async <T>(
   if (!response.ok) {
     const errorPayload = await response.json().catch(() => null);
     throw errorPayload ?? new Error(response.statusText);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return (await response.json()) as T;

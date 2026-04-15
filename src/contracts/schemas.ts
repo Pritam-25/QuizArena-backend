@@ -24,7 +24,7 @@ export const registerBodySchema: any = z.object({
 
 export const loginBodySchema: any = z.object({
   email: z.string().email().default('john@example.com'),
-  password: z.string().min(1).default('password123'),
+  password: z.string().min(6).default('password123'),
 });
 
 export const createUserBodySchema: any = z.object({
@@ -73,10 +73,10 @@ export const reorderQuestionBodySchema: any = z.object({
 });
 
 export const createSessionBodySchema: any = z.object({
-  quizId: z.string().uuid().default('11111111-1111-1111-1111-111111111111'),
+  quizId: z.string().uuid().default('123e4567-e89b-12d3-a456-426614174000'),
 });
 
 export const joinSessionBodySchema: any = z.object({
-  joinCode: z.string().default('11111111-1111-1111-1111-111111111111'),
+  joinCode: z.string().uuid().default('123e4567-e89b-12d3-a456-426614174000'),
   nickname: z.string().min(1).max(30).default('PlayerOne'),
 });

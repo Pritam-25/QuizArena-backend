@@ -14,10 +14,22 @@ const isErrorContractShape = (
   }
 
   const candidate = error as Record<string, unknown>;
+  const candidateStatusCode = candidate.statusCode;
+  const candidateErrorCode = candidate.errorCode;
+
   return (
-    typeof candidate.statusCode === 'number' &&
-    typeof candidate.errorCode === 'string' &&
-    typeof candidate.message === 'string'
+    typeof candidateStatusCode === 'number' &&
+    Number.isInteger(candidateStatusCode) &&
+    candidateStatusCode >= 100 &&
+    candidateStatusCode <= 599 &&
+    typeof candidateErrorCode === 'string' &&
+    Object.values(ERROR_CODES).includes(
+      candidateErrorCode as (typeof ERROR_CODES)[keyof typeof ERROR_CODES]
+    ) &&
+    typeof candidate.message === 'string' &&
+    candidate.message.trim().length > 0 &&
+    (candidate.details === undefined ||
+      (typeof candidate.details === 'object' && candidate.details !== null))
   );
 };
 

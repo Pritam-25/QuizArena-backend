@@ -35,6 +35,8 @@ export const env = createEnv({
     OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
     OTEL_DEBUG: z.enum(['true', 'false']).default('false'),
     LOKI_HOST: z.url().optional(),
+    PUBLIC_URL: z.string().optional(),
+    BASE_URL: z.string().optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

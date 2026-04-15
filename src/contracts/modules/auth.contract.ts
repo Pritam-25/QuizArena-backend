@@ -17,9 +17,7 @@ export const authContract = c.router(
       summary: 'Register a new user',
       body: registerBodySchema,
       responses: {
-        201: createSuccessResponseSchema(
-          z.object({ user: userShapeSchema }) as any
-        ),
+        201: createSuccessResponseSchema(z.object({ user: userShapeSchema })),
         409: errorResponseSchema,
       },
       metadata: { tags: ['Auth'] },
@@ -30,9 +28,7 @@ export const authContract = c.router(
       summary: 'Authenticate a user',
       body: loginBodySchema,
       responses: {
-        200: createSuccessResponseSchema(
-          z.object({ user: userShapeSchema }) as any
-        ),
+        200: createSuccessResponseSchema(z.object({ user: userShapeSchema })),
         401: errorResponseSchema,
       },
       metadata: { tags: ['Auth'] },
@@ -42,9 +38,7 @@ export const authContract = c.router(
       path: '/auth/me',
       summary: 'Get current authenticated user',
       responses: {
-        200: createSuccessResponseSchema(
-          z.object({ user: userShapeSchema }) as any
-        ),
+        200: createSuccessResponseSchema(z.object({ user: userShapeSchema })),
         401: errorResponseSchema,
       },
       metadata: { tags: ['Auth'] },

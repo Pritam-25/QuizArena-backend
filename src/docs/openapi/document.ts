@@ -224,21 +224,21 @@ export const generateOpenApiDocument = (): any => {
     },
     servers: [
       {
-        url: `http://localhost:${env.PORT}`,
+        url: env.PUBLIC_URL ?? env.BASE_URL ?? '/',
       },
     ],
     components: {
       securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
+        sessionCookie: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'auth_token',
         },
       },
     },
   });
 
-  document.security = [{ bearerAuth: [] }];
+  document.security = [{ sessionCookie: [] }];
   attachRequestExamples(document);
   attachResponseExamples(document);
 

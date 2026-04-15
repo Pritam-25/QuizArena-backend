@@ -58,11 +58,11 @@ describe('normalizeError', () => {
     });
   });
 
-  it('maps native Error to INTERNAL_ERROR preserving message', () => {
+  it('maps native Error to INTERNAL_ERROR with generic message', () => {
     expect(normalizeError(new Error('unexpected failure'))).toEqual({
       statusCode: statusCode.internalError,
       errorCode: ERROR_CODES.INTERNAL_ERROR,
-      message: 'unexpected failure',
+      message: ERROR_MESSAGES.INTERNAL_ERROR,
     });
   });
 
