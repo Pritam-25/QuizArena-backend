@@ -5,6 +5,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { env } from '@config/env.js';
 import logger from '@infrastructure/logger/logger.js';
 import { socketAuthMiddleware } from './socketAuth.js';
+import { registerSessionSocketHandlers } from './sessionSocket.js';
 
 type RedisClient = ReturnType<typeof createClient>;
 
@@ -96,6 +97,8 @@ export const setupSocketServer = async (httpServer: HttpServer) => {
         { socketId: socket.id, userId: socket.data.userId },
         'Socket connected'
       );
+
+      registerSessionSocketHandlers(io!, socket);
 
       socket.on('disconnect', reason => {
         logger.info({ socketId: socket.id, reason }, 'Socket disconnected');
