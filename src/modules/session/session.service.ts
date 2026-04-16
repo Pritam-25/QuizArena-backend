@@ -194,6 +194,13 @@ export class SessionService {
     return updated;
   }
 
+  /**
+   * Returns the current participant list for a session (id, nickname, score).
+   */
+  async getSessionParticipants(sessionId: string) {
+    return this.repo.findParticipantsBySession(sessionId);
+  }
+
   // ─── Question Flow ─────────────────────────────────────────────────────────
 
   /**

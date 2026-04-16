@@ -24,5 +24,8 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   SESSION_NOT_LIVE: 'Session is not live',
   QUESTION_TIMER_EXPIRED: 'Question timer has expired',
   INVALID_QUESTION_INDEX: 'No more questions available',
+  NOT_IN_SESSION: 'You must join a session first',
+  NO_ACTIVE_QUESTION: 'No active question or question mismatch',
+  INVALID_ANSWER: 'Either optionId or answerText is required',
   INTERNAL_ERROR: 'Something went wrong',
 };

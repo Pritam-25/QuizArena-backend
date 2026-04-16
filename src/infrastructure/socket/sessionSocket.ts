@@ -5,6 +5,8 @@ import {
 } from '@infrastructure/redis/sessionState.repository.js';
 import { createSessionModule } from '@modules/session/session.factory.js';
 import { SocketError } from '@shared/utils/errors/socketError.js';
+import { ApiError, ERROR_CODES } from '@shared/utils/errors/index.js';
+import { statusCode } from '@shared/utils/http/statusCodes.js';
 import type { AnswerUpdatePayload } from '@modules/session/session.dto.js';
 import type { Server as SocketIOServer, Socket } from 'socket.io';
 
@@ -84,24 +86,43 @@ export const registerSessionSocketHandlers = (
   socket.on('session:host-join', async (payload: { sessionId: string }) => {
     const authenticatedUserId = getAuthenticatedUserId(socket);
     if (!authenticatedUserId) {
-      socket.emit('error:session', {
-        event: 'session:host-join',
-        message: 'Unauthorized',
-      });
+      SocketError(
+        socket,
+        'session:host-join',
+        new ApiError(statusCode.unauthorized, ERROR_CODES.UNAUTHORIZED)
+      );
       return;
     }
 
     const { sessionId } = payload;
 
-    socket.join(sessionId);
-    socket.data.sessionId = sessionId;
+    try {
+      // Fetch current participant list so the host sees who's already in the lobby
+      const participants =
+        await sessionService.getSessionParticipants(sessionId);
 
-    logger.info(
-      { socketId: socket.id, sessionId, hostUserId: authenticatedUserId },
-      'Host joined session room (lobby)'
-    );
+      socket.join(sessionId);
+      socket.data.sessionId = sessionId;
 
-    socket.emit('session:host-joined', { sessionId });
+      logger.info(
+        { socketId: socket.id, sessionId, hostUserId: authenticatedUserId },
+        'Host joined session room (lobby)'
+      );
+
+      socket.emit('session:host-joined', { sessionId, participants });
+    } catch (error) {
+      logger.warn(
+        {
+          socketId: socket.id,
+          sessionId,
+          hostUserId: authenticatedUserId,
+          err: error,
+        },
+        'session:host-join handler failed'
+      );
+
+      SocketError(socket, 'session:host-join', error);
+    }
   });
 
   // ─── Start Session ─────────────────────────────────────────────────────────
@@ -112,6 +133,11 @@ export const registerSessionSocketHandlers = (
       logger.warn(
         { socketId: socket.id },
         'Unauthorized session:start attempt'
+      );
+      SocketError(
+        socket,
+        'session:start',
+        new ApiError(statusCode.unauthorized, ERROR_CODES.UNAUTHORIZED)
       );
       return;
     }
@@ -161,10 +187,11 @@ export const registerSessionSocketHandlers = (
         { socketId: socket.id },
         'Unauthorized question:next attempt'
       );
-      socket.emit('error:session', {
-        event: 'question:next',
-        message: 'Unauthorized',
-      });
+      SocketError(
+        socket,
+        'question:next',
+        new ApiError(statusCode.unauthorized, ERROR_CODES.UNAUTHORIZED)
+      );
       return;
     }
 
@@ -207,10 +234,11 @@ export const registerSessionSocketHandlers = (
         (socket.data.participantId as string) ?? payload.sessionId;
 
       if (!participantId || !socket.data.sessionId) {
-        socket.emit('error:session', {
-          event: 'answer:update',
-          message: 'Not joined to a session',
-        });
+        SocketError(
+          socket,
+          'answer:update',
+          new ApiError(statusCode.badRequest, ERROR_CODES.NOT_IN_SESSION)
+        );
         return;
       }
 
@@ -221,18 +249,23 @@ export const registerSessionSocketHandlers = (
         // Validate that the question timer hasn't expired
         const activeQuestion = await getActiveQuestion(sessionId);
         if (!activeQuestion || activeQuestion.activeQuestionId !== questionId) {
-          socket.emit('error:session', {
-            event: 'answer:update',
-            message: 'No active question or question mismatch',
-          });
+          SocketError(
+            socket,
+            'answer:update',
+            new ApiError(statusCode.badRequest, ERROR_CODES.NO_ACTIVE_QUESTION)
+          );
           return;
         }
 
         if (Date.now() > activeQuestion.questionEndsAt) {
-          socket.emit('error:session', {
-            event: 'answer:update',
-            message: 'Question timer has expired',
-          });
+          SocketError(
+            socket,
+            'answer:update',
+            new ApiError(
+              statusCode.badRequest,
+              ERROR_CODES.QUESTION_TIMER_EXPIRED
+            )
+          );
           return;
         }
 
@@ -243,10 +276,11 @@ export const registerSessionSocketHandlers = (
         } else if (optionId) {
           value = optionId;
         } else {
-          socket.emit('error:session', {
-            event: 'answer:update',
-            message: 'Either optionId or answerText is required',
-          });
+          SocketError(
+            socket,
+            'answer:update',
+            new ApiError(statusCode.badRequest, ERROR_CODES.INVALID_ANSWER)
+          );
           return;
         }
 
