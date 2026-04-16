@@ -4,6 +4,7 @@ import {
   getActiveQuestion,
 } from '@infrastructure/redis/sessionState.repository.js';
 import { createSessionModule } from '@modules/session/session.factory.js';
+import { SocketError } from '@shared/utils/errors/socketError.js';
 import type { AnswerUpdatePayload } from '@modules/session/session.dto.js';
 import type { Server as SocketIOServer, Socket } from 'socket.io';
 
@@ -74,11 +75,7 @@ export const registerSessionSocketHandlers = (
         'session:join handler failed'
       );
 
-      socket.emit('error:session', {
-        event: 'session:join',
-        message:
-          error instanceof Error ? error.message : 'Failed to join session',
-      });
+      SocketError(socket, 'session:join', error);
     }
   });
 
@@ -151,11 +148,7 @@ export const registerSessionSocketHandlers = (
         'session:start handler failed'
       );
 
-      socket.emit('error:session', {
-        event: 'session:start',
-        message:
-          error instanceof Error ? error.message : 'Failed to start session',
-      });
+      SocketError(socket, 'session:start', error);
     }
   });
 
@@ -201,11 +194,7 @@ export const registerSessionSocketHandlers = (
         'question:next handler failed'
       );
 
-      socket.emit('error:session', {
-        event: 'question:next',
-        message:
-          error instanceof Error ? error.message : 'Failed to advance question',
-      });
+      SocketError(socket, 'question:next', error);
     }
   });
 
@@ -275,11 +264,7 @@ export const registerSessionSocketHandlers = (
           'answer:update handler failed'
         );
 
-        socket.emit('error:session', {
-          event: 'answer:update',
-          message:
-            error instanceof Error ? error.message : 'Failed to update answer',
-        });
+        SocketError(socket, 'answer:update', error);
       }
     }
   );
