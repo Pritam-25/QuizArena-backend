@@ -199,7 +199,7 @@
                   "password": {
                     "default": "password123",
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 6
                   }
                 },
                 "example": {
@@ -1319,7 +1319,7 @@
                 "type": "object",
                 "properties": {
                   "quizId": {
-                    "default": "11111111-1111-1111-1111-111111111111",
+                    "default": "123e4567-e89b-12d3-a456-426614174000",
                     "type": "string",
                     "format": "uuid"
                   }
@@ -1523,8 +1523,9 @@
                 "type": "object",
                 "properties": {
                   "joinCode": {
-                    "default": "11111111-1111-1111-1111-111111111111",
-                    "type": "string"
+                    "default": "123e4567-e89b-12d3-a456-426614174000",
+                    "type": "string",
+                    "minLength": 1
                   },
                   "nickname": {
                     "default": "PlayerOne",
