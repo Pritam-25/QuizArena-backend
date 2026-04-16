@@ -1,20 +1,9 @@
 import { SessionStatus } from '@generated/prisma/enums.js';
-import {
-  addPlayer,
-  createSessionState,
-  setActiveQuestion,
-  getActiveQuestion,
-  getAllAnswers,
-  clearQuestionAnswers,
-  incrementScore,
-  getLeaderboard,
-  initLeaderboard,
-  setSessionEnded,
-} from '@infrastructure/redis/sessionState.repository.js';
-import { scheduleQuestionEvaluation } from '@infrastructure/queue/sessionQueue.js';
 import logger from '@infrastructure/logger/logger.js';
 import { ApiError, ERROR_CODES } from '@shared/utils/errors/index.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';
+import type { SessionStateRepository } from '@infrastructure/redis/sessionState.repository.js';
+import type { SessionQueue } from '@infrastructure/queue/sessionQueue.js';
 import type { SessionRepository } from './session.repository.js';
 import type {
   CreateSessionDto,
@@ -34,17 +23,24 @@ import {
 export class SessionService {
   /**
    * Creates service instance for session business logic.
-   * @param repo - Session repository instance
+   *
+   * @param repo        - Prisma-backed session repository (DB)
+   * @param stateRepo   - Redis-backed session state repository (ephemeral)
+   * @param sessionQueue - BullMQ queue for delayed evaluation jobs
    */
-  constructor(private repo: SessionRepository) {}
+  constructor(
+    private readonly repo: SessionRepository,
+    private readonly stateRepo: SessionStateRepository,
+    private readonly sessionQueue: SessionQueue
+  ) {}
 
-  // ─── Session Lifecycle ───────────────────────────────────────────────────────
+  // ─── Session Lifecycle ────────────────────────────────────────────────────────
 
   /**
    * Creates a new session.
    * @param data - CreateSessionDto (includes quizId, hostId)
    * @returns The created Session record with a user-facing join link
-   * */
+   */
   async createSession(data: CreateSessionDto): Promise<SessionResponseDto> {
     const joinCode = generateSessionJoinCode();
     const session = await this.repo.createSession({
@@ -54,13 +50,10 @@ export class SessionService {
     });
 
     try {
-      await createSessionState(session.id);
+      await this.stateRepo.createSessionState(session.id);
     } catch (stateError) {
       logger.error(
-        {
-          sessionId: session.id,
-          err: stateError,
-        },
+        { sessionId: session.id, err: stateError },
         'Failed to initialize Redis state for created session'
       );
 
@@ -72,10 +65,7 @@ export class SessionService {
         );
       } catch (cleanupError) {
         logger.error(
-          {
-            sessionId: session.id,
-            err: cleanupError,
-          },
+          { sessionId: session.id, err: cleanupError },
           'Failed to compensate session creation after Redis state failure'
         );
       }
@@ -91,8 +81,6 @@ export class SessionService {
 
   /**
    * Finds a session by its Join Code.
-   * @param joinCode - The Join Code of the session to find
-   * @returns The Session record if found, otherwise null
    */
   async findSessionByJoinCode(joinCode: string) {
     const normalizedJoinCode = normalizeSessionJoinCode(joinCode);
@@ -101,9 +89,7 @@ export class SessionService {
 
   /**
    * Finds a session by its ID.
-   * @param sessionId - The ID of the session to find
-   * @returns The Session record if found, otherwise null
-   * */
+   */
   async findSessionById(sessionId: string) {
     return await this.repo.findSessionById(sessionId);
   }
@@ -127,7 +113,7 @@ export class SessionService {
     );
 
     try {
-      await addPlayer(session.id, participant.id);
+      await this.stateRepo.addPlayer(session.id, participant.id);
     } catch (addPlayerError) {
       logger.error(
         {
@@ -141,10 +127,7 @@ export class SessionService {
       try {
         await this.repo.deleteParticipant(participant.id);
         logger.warn(
-          {
-            sessionId: session.id,
-            participantId: participant.id,
-          },
+          { sessionId: session.id, participantId: participant.id },
           'Compensated join by deleting persisted participant after Redis addPlayer failure'
         );
       } catch (cleanupError) {
@@ -189,7 +172,7 @@ export class SessionService {
     // Initialize leaderboard with all participants at score 0
     const participants = await this.repo.findParticipantsBySession(sessionId);
     const participantIds = participants.map(p => p.id);
-    await initLeaderboard(sessionId, participantIds);
+    await this.stateRepo.initLeaderboard(sessionId, participantIds);
 
     return updated;
   }
@@ -201,7 +184,59 @@ export class SessionService {
     return this.repo.findParticipantsBySession(sessionId);
   }
 
-  // ─── Question Flow ─────────────────────────────────────────────────────────
+  /**
+   * Validates and records a participant's answer for the currently active question.
+   *
+   * Rules enforced here (not in the socket handler):
+   * - A question must be active for this session
+   * - The submitted questionId must match the active question
+   * - The question timer must not have expired
+   * - Exactly one of optionId or answerText must be present
+   *
+   * @throws ApiError NO_ACTIVE_QUESTION    – no active question or id mismatch
+   * @throws ApiError QUESTION_TIMER_EXPIRED – submission is after deadline
+   * @throws ApiError INVALID_ANSWER         – neither optionId nor answerText provided
+   */
+  async submitAnswer(data: {
+    sessionId: string;
+    participantId: string;
+    questionId: string;
+    optionId?: string;
+    answerText?: string;
+  }): Promise<void> {
+    const { sessionId, participantId, questionId, optionId, answerText } = data;
+
+    const activeQuestion = await this.stateRepo.getActiveQuestion(sessionId);
+    if (!activeQuestion || activeQuestion.activeQuestionId !== questionId) {
+      throw new ApiError(statusCode.badRequest, ERROR_CODES.NO_ACTIVE_QUESTION);
+    }
+
+    if (Date.now() > activeQuestion.questionEndsAt) {
+      throw new ApiError(
+        statusCode.badRequest,
+        ERROR_CODES.QUESTION_TIMER_EXPIRED
+      );
+    }
+
+    let value: string;
+    if (answerText !== undefined && answerText !== null) {
+      value = `text:${answerText}`;
+    } else if (optionId) {
+      value = optionId;
+    } else {
+      throw new ApiError(statusCode.badRequest, ERROR_CODES.INVALID_ANSWER);
+    }
+
+    // Overwrite in Redis (no evaluation, no DB hit — evaluation runs after timer via BullMQ)
+    await this.stateRepo.updateAnswer(
+      sessionId,
+      questionId,
+      participantId,
+      value
+    );
+  }
+
+  // ─── Question Flow ────────────────────────────────────────────────────────────
 
   /**
    * Advances to the next question. Only the host should call this.
@@ -236,18 +271,23 @@ export class SessionService {
     const delayMs = question.timeLimit * 1000;
     const endsAt = Date.now() + delayMs;
 
-    // Update Redis state with the active question
-    await setActiveQuestion(sessionId, question.id, nextIndex, endsAt);
+    await this.stateRepo.setActiveQuestion(
+      sessionId,
+      question.id,
+      nextIndex,
+      endsAt
+    );
 
-    // Increment the question index in DB for next advance call
     await this.repo.updateSessionStatus(sessionId, {
       currentQuestionIndex: nextIndex + 1,
     });
 
-    // Schedule evaluation after the timer expires
-    await scheduleQuestionEvaluation(sessionId, question.id, delayMs);
+    await this.sessionQueue.scheduleQuestionEvaluation(
+      sessionId,
+      question.id,
+      delayMs
+    );
 
-    // Return question payload WITHOUT correct answers
     return {
       question: {
         id: question.id,
@@ -264,7 +304,7 @@ export class SessionService {
     };
   }
 
-  // ─── Evaluation (Called by BullMQ Worker) ──────────────────────────────────
+  // ─── Evaluation (Called by BullMQ Worker) ─────────────────────────────────────
 
   /**
    * Evaluates all answers for a question after the timer expires.
@@ -286,7 +326,10 @@ export class SessionService {
     finalLeaderboard?: LeaderboardEntry[];
   }> {
     // 1. Get all answers from Redis
-    const rawAnswers = await getAllAnswers(sessionId, questionId);
+    const rawAnswers = await this.stateRepo.getAllAnswers(
+      sessionId,
+      questionId
+    );
 
     // 2. Load question with options
     const question = await this.repo.findQuestionWithOptions(questionId);
@@ -322,14 +365,11 @@ export class SessionService {
       let answerText: string | null = null;
 
       if (value.startsWith('text:')) {
-        // Fill-in-the-blank answer
         answerText = value.slice(5);
-        // Case-insensitive exact match against any correct option text
         isCorrect = correctOptions.some(
           o => o.optionText.toLowerCase() === answerText!.toLowerCase()
         );
       } else {
-        // Option-based answer (MCQ, TRUE_FALSE, MULTI_SELECT)
         optionId = value;
         isCorrect = correctOptions.some(o => o.id === optionId);
       }
@@ -353,7 +393,7 @@ export class SessionService {
     // 4. Increment Redis leaderboard scores
     await Promise.all(
       scoreUpdates.map(({ participantId, points }) =>
-        incrementScore(sessionId, participantId, points)
+        this.stateRepo.incrementScore(sessionId, participantId, points)
       )
     );
 
@@ -369,9 +409,8 @@ export class SessionService {
     }
 
     // 6. Get updated leaderboard
-    const leaderboardRaw = await getLeaderboard(sessionId);
+    const leaderboardRaw = await this.stateRepo.getLeaderboard(sessionId);
 
-    // Enrich leaderboard with nicknames
     const participants = await this.repo.findParticipantsBySession(sessionId);
     const nicknameMap = new Map(participants.map(p => [p.id, p.nickname]));
 
@@ -385,7 +424,7 @@ export class SessionService {
     );
 
     // 7. Clean up Redis answers for this question
-    await clearQuestionAnswers(sessionId, questionId);
+    await this.stateRepo.clearQuestionAnswers(sessionId, questionId);
 
     // 8. Check if this was the last question
     const session = await this.repo.findSessionWithQuestions(sessionId);
@@ -394,14 +433,12 @@ export class SessionService {
       session.currentQuestionIndex >= session.quiz.questions.length;
 
     if (isLastQuestion && session) {
-      // Mark session as ENDED in both DB and Redis
       await this.repo.updateSessionStatus(sessionId, {
         status: SessionStatus.ENDED,
         endedAt: new Date(),
       });
-      await setSessionEnded(sessionId);
+      await this.stateRepo.setSessionEnded(sessionId);
 
-      // Sync final scores from Redis to DB
       try {
         await this.repo.updateParticipantScores(
           leaderboard.map(e => ({

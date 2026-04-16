@@ -3,19 +3,22 @@ import logger from '@infrastructure/logger/logger.js';
 import app from './app.js';
 import { env } from '@config/env.js';
 import { prisma } from '@infrastructure/database/prismaClient.js';
+import { redis } from '@infrastructure/redis/redisClient.js';
 import {
   closeSocketInfrastructure,
   setupSocketServer,
+  getSocketServer,
 } from '@infrastructure/socket/socketServer.js';
-import {
-  startSessionWorker,
-  stopSessionWorker,
-} from '@infrastructure/queue/sessionWorker.js';
+import { SessionWorker } from '@infrastructure/queue/sessionWorker.js';
+import { createSessionModule } from '@modules/session/session.factory.js';
 
 const PORT = env.PORT;
 
 /**
  * Boots application infrastructure and starts the HTTP server.
+ *
+ * All module instances are created once here (single composition root) and
+ * injected into the layers that need them. Nothing downstream self-wires.
  */
 const startServer = async () => {
   await prisma.$connect();
@@ -23,10 +26,18 @@ const startServer = async () => {
 
   const server = http.createServer(app);
 
-  await setupSocketServer(server);
+  // Single composition root — one module instance shared by socket + worker
+  const { service: sessionService } = createSessionModule();
+
+  await setupSocketServer(server, sessionService);
   logger.info('Socket.IO initialized with Redis adapter');
 
-  startSessionWorker();
+  const sessionWorker = new SessionWorker(
+    sessionService,
+    getSocketServer,
+    redis
+  );
+  sessionWorker.start();
   logger.info('BullMQ session worker started');
 
   server.listen(PORT, () => {
@@ -35,15 +46,16 @@ const startServer = async () => {
     );
   });
 
-  return server;
+  return { server, sessionWorker };
 };
 
-const server = await startServer();
+const { server, sessionWorker } = await startServer();
 
 let isShuttingDown = false;
 
 /**
- * Performs graceful shutdown for HTTP server, Socket.IO infrastructure, and Prisma.
+ * Performs graceful shutdown for HTTP server, Socket.IO infrastructure,
+ * BullMQ worker, and Prisma.
  *
  * @param signal OS signal that triggered shutdown.
  */
@@ -70,7 +82,7 @@ const shutdown = async (signal: NodeJS.Signals) => {
       await closeSocketInfrastructure();
       logger.info('Socket infrastructure closed');
 
-      await stopSessionWorker();
+      await sessionWorker.stop();
       logger.info('Session worker stopped');
 
       await prisma.$disconnect();

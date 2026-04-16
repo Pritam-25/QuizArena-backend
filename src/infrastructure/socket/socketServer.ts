@@ -4,8 +4,9 @@ import { createClient } from 'redis';
 import { Server as SocketIOServer } from 'socket.io';
 import { env } from '@config/env.js';
 import logger from '@infrastructure/logger/logger.js';
-import { socketAuthMiddleware } from './socketAuth.js';
-import { registerSessionSocketHandlers } from './sessionSocket.js';
+import { socketAuthMiddleware } from '@shared/middlewares/socketAuth.js';
+import { SessionSocketHandler } from '@modules/session/session.socket.js';
+import type { SessionService } from '@modules/session/session.service.js';
 
 type RedisClient = ReturnType<typeof createClient>;
 
@@ -75,13 +76,17 @@ const connectAdapterClients = async () => {
 /**
  * Initializes a singleton Socket.IO server on top of the provided HTTP server.
  *
- * If Redis adapter clients are not connected yet, they are created and connected
- * before attaching the adapter.
+ * The `sessionService` is injected from `server.ts` (the single composition
+ * root) so the socket layer owns zero wiring logic — it only sets up transport.
  *
- * @param httpServer Node HTTP server hosting the Express app.
+ * @param httpServer     Node HTTP server hosting the Express app.
+ * @param sessionService Injected session service for socket handlers.
  * @returns Initialized Socket.IO server instance.
  */
-export const setupSocketServer = async (httpServer: HttpServer) => {
+export const setupSocketServer = async (
+  httpServer: HttpServer,
+  sessionService: SessionService
+) => {
   if (!io) {
     io = new SocketIOServer(httpServer, {
       cors: {
@@ -89,6 +94,9 @@ export const setupSocketServer = async (httpServer: HttpServer) => {
         credentials: true,
       },
     });
+
+    // Build the handler once; each connection calls handler.register(socket)
+    const socketHandler = new SessionSocketHandler(io, sessionService);
 
     io.use(socketAuthMiddleware);
 
@@ -98,7 +106,7 @@ export const setupSocketServer = async (httpServer: HttpServer) => {
         'Socket connected'
       );
 
-      registerSessionSocketHandlers(io!, socket);
+      socketHandler.register(socket);
 
       socket.on('disconnect', reason => {
         logger.info({ socketId: socket.id, reason }, 'Socket disconnected');

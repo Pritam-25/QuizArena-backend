@@ -5,3 +5,4 @@ export { default as metricsMiddleware } from './metrics.js';
 export { default as errorHandlerMiddleware } from './errorHandler.js';
 export { asyncHandler } from './asyncHandler.js';
 export { authMiddleware, requireAuth } from './auth.js';
+export { socketAuthMiddleware } from './socketAuth.js';

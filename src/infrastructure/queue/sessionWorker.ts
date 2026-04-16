@@ -1,106 +1,116 @@
 import { Worker } from 'bullmq';
-import { redis } from '@infrastructure/redis/redisClient.js';
-import { getSocketServer } from '@infrastructure/socket/socketServer.js';
+import type { Redis } from 'ioredis';
+import type { Server as SocketIOServer } from 'socket.io';
 import logger from '@infrastructure/logger/logger.js';
-import { createSessionModule } from '@modules/session/session.factory.js';
+import type { SessionService } from '@modules/session/session.service.js';
 
 type EvaluateQuestionData = {
   sessionId: string;
   questionId: string;
 };
 
-let sessionWorker: Worker | null = null;
-
 /**
- * Starts the BullMQ session worker that processes delayed evaluation jobs.
+ * BullMQ worker that processes delayed question-evaluation jobs.
  *
- * Should be called once during server startup, after Socket.IO is initialized.
+ * Dependencies are injected via constructor so the worker can be started
+ * after Socket.IO is initialized and the session service is wired.
  */
-export function startSessionWorker() {
-  if (sessionWorker) {
-    logger.warn('Session worker already running, skipping duplicate start');
-    return sessionWorker;
-  }
+export class SessionWorker {
+  private worker: Worker | null = null;
 
-  const { service: sessionService } = createSessionModule();
+  /**
+   * @param sessionService - Injected session service (evaluates questions)
+   * @param getIo          - Lazy getter for the Socket.IO server (avoids circular init)
+   * @param redis          - Shared ioredis client for the BullMQ connection
+   */
+  constructor(
+    private readonly sessionService: SessionService,
+    private readonly getIo: () => SocketIOServer,
+    private readonly redis: Redis
+  ) {}
 
-  sessionWorker = new Worker<EvaluateQuestionData>(
-    'session',
-    async job => {
-      if (job.name !== 'evaluate-question') {
-        logger.warn({ jobName: job.name }, 'Unknown session job type');
-        return;
-      }
+  /**
+   * Starts the BullMQ worker. Safe to call once during server bootstrap.
+   * Subsequent calls are no-ops and return the existing worker.
+   */
+  start(): Worker {
+    if (this.worker) {
+      logger.warn('Session worker already running, skipping duplicate start');
+      return this.worker;
+    }
 
-      const { sessionId, questionId } = job.data;
-
-      logger.info(
-        { sessionId, questionId, jobId: job.id },
-        'Processing question evaluation'
-      );
-
-      try {
-        const { result, isLastQuestion, finalLeaderboard } =
-          await sessionService.evaluateQuestion(sessionId, questionId);
-
-        const io = getSocketServer();
-
-        // Broadcast correct answer + leaderboard to all participants
-        io.to(sessionId).emit('question:ended', result);
-
-        if (isLastQuestion && finalLeaderboard) {
-          io.to(sessionId).emit('session:ended', {
-            finalLeaderboard,
-          });
-
-          logger.info({ sessionId }, 'Session ended after last question');
+    this.worker = new Worker<EvaluateQuestionData>(
+      'session',
+      async job => {
+        if (job.name !== 'evaluate-question') {
+          logger.warn({ jobName: job.name }, 'Unknown session job type');
+          return;
         }
 
+        const { sessionId, questionId } = job.data;
+
         logger.info(
-          {
-            sessionId,
-            questionId,
-            answersEvaluated: result.leaderboard.length,
-            isLastQuestion,
-          },
-          'Question evaluation completed'
+          { sessionId, questionId, jobId: job.id },
+          'Processing question evaluation'
         );
-      } catch (error) {
-        logger.error(
-          { sessionId, questionId, err: error },
-          'Failed to evaluate question'
-        );
-        throw error; // Let BullMQ retry
-      }
-    },
-    {
-      connection: redis,
-      concurrency: 5,
-    }
-  );
 
-  sessionWorker.on('failed', (job, error) => {
-    logger.error(
-      { jobId: job?.id, jobName: job?.name, err: error },
-      'Session worker job failed'
+        try {
+          const { result, isLastQuestion, finalLeaderboard } =
+            await this.sessionService.evaluateQuestion(sessionId, questionId);
+
+          const io = this.getIo();
+
+          // Broadcast correct answer + leaderboard to all participants
+          io.to(sessionId).emit('question:ended', result);
+
+          if (isLastQuestion && finalLeaderboard) {
+            io.to(sessionId).emit('session:ended', { finalLeaderboard });
+            logger.info({ sessionId }, 'Session ended after last question');
+          }
+
+          logger.info(
+            {
+              sessionId,
+              questionId,
+              answersEvaluated: result.leaderboard.length,
+              isLastQuestion,
+            },
+            'Question evaluation completed'
+          );
+        } catch (error) {
+          logger.error(
+            { sessionId, questionId, err: error },
+            'Failed to evaluate question'
+          );
+          throw error; // Let BullMQ retry
+        }
+      },
+      { connection: this.redis, concurrency: 5 }
     );
-  });
 
-  sessionWorker.on('error', (error: Error) => {
-    logger.error({ err: error }, 'Session worker error');
-  });
+    this.worker.on('failed', (job, error) => {
+      logger.error(
+        { jobId: job?.id, jobName: job?.name, err: error },
+        'Session worker job failed'
+      );
+    });
 
-  logger.info('Session worker started');
-  return sessionWorker;
-}
+    this.worker.on('error', (error: Error) => {
+      logger.error({ err: error }, 'Session worker error');
+    });
 
-/**
- * Gracefully shuts down the session worker.
- */
-export async function stopSessionWorker() {
-  if (!sessionWorker) return;
+    logger.info('Session worker started');
+    return this.worker;
+  }
 
-  await sessionWorker.close();
-  sessionWorker = null;
-  logger.info('Session worker stopped');
+  /**
+   * Gracefully shuts down the BullMQ worker.
+   */
+  async stop(): Promise<void> {
+    if (!this.worker) return;
+
+    await this.worker.close();
+    this.worker = null;
+    logger.info('Session worker stopped');
+  }
 }
