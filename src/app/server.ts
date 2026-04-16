@@ -7,6 +7,10 @@ import {
   closeSocketInfrastructure,
   setupSocketServer,
 } from '@infrastructure/socket/socketServer.js';
+import {
+  startSessionWorker,
+  stopSessionWorker,
+} from '@infrastructure/queue/sessionWorker.js';
 
 const PORT = env.PORT;
 
@@ -21,6 +25,9 @@ const startServer = async () => {
 
   await setupSocketServer(server);
   logger.info('Socket.IO initialized with Redis adapter');
+
+  startSessionWorker();
+  logger.info('BullMQ session worker started');
 
   server.listen(PORT, () => {
     logger.info(
@@ -62,6 +69,9 @@ const shutdown = async (signal: NodeJS.Signals) => {
     try {
       await closeSocketInfrastructure();
       logger.info('Socket infrastructure closed');
+
+      await stopSessionWorker();
+      logger.info('Session worker stopped');
 
       await prisma.$disconnect();
       logger.info('Prisma disconnected');

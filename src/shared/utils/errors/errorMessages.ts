@@ -8,7 +8,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   FORBIDDEN: 'Forbidden',
   INVALID_TOKEN: 'Invalid token',
   INVALID_CREDENTIALS: 'Invalid email or password',
-  INVALID_INPUT: 'Invalid Request body',
+  INVALID_INPUT: 'Invalid request body',
   REQUIRE_REQUEST_BODY: 'Request body is required',
   QUIZ_NOT_FOUND: 'Quiz not found',
   SESSION_NOT_FOUND: 'Session not found',
@@ -21,5 +21,8 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   DUPLICATE_OPTIONS: 'Duplicate options are not allowed for this question',
   INVALID_OPTIONS: 'Invalid options provided',
   NO_OPTIONS_ALLOWED: 'Options are not allowed for this question type',
+  SESSION_NOT_LIVE: 'Session is not live',
+  QUESTION_TIMER_EXPIRED: 'Question timer has expired',
+  INVALID_QUESTION_INDEX: 'No more questions available',
   INTERNAL_ERROR: 'Something went wrong',
 };

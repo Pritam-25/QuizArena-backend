@@ -5,11 +5,23 @@ import { SessionService } from '../../../src/modules/session/session.service.js'
 import type { SessionRepository } from '../../../src/modules/session/session.repository.js';
 import { ERROR_CODES } from '../../../src/shared/utils/errors/errorCodes.js';
 import { statusCode } from '../../../src/shared/utils/http/statusCodes.js';
-import * as sessionState from '../../../src/infrastructure/session.state.js';
+import * as sessionState from '../../../src/infrastructure/redis/sessionState.repository.js';
 
-vi.mock('@infrastructure/session.state.js', () => ({
+vi.mock('@infrastructure/redis/sessionState.repository.js', () => ({
   createSessionState: vi.fn(),
   addPlayer: vi.fn(),
+  setActiveQuestion: vi.fn(),
+  getActiveQuestion: vi.fn(),
+  getAllAnswers: vi.fn(),
+  clearQuestionAnswers: vi.fn(),
+  incrementScore: vi.fn(),
+  getLeaderboard: vi.fn(),
+  initLeaderboard: vi.fn(),
+  setSessionEnded: vi.fn(),
+}));
+
+vi.mock('@infrastructure/queue/sessionQueue.js', () => ({
+  scheduleQuestionEvaluation: vi.fn(),
 }));
 
 type RepoMock = {
@@ -17,9 +29,14 @@ type RepoMock = {
   deleteSession: ReturnType<typeof vi.fn>;
   findSessionByJoinCode: ReturnType<typeof vi.fn>;
   findSessionById: ReturnType<typeof vi.fn>;
+  findSessionWithQuestions: ReturnType<typeof vi.fn>;
+  findQuestionWithOptions: ReturnType<typeof vi.fn>;
   addParticipant: ReturnType<typeof vi.fn>;
   deleteParticipant: ReturnType<typeof vi.fn>;
   updateSessionStatus: ReturnType<typeof vi.fn>;
+  findParticipantsBySession: ReturnType<typeof vi.fn>;
+  createAnswerBatch: ReturnType<typeof vi.fn>;
+  updateParticipantScores: ReturnType<typeof vi.fn>;
 };
 
 function buildRepoMock(): RepoMock {
@@ -28,9 +45,14 @@ function buildRepoMock(): RepoMock {
     deleteSession: vi.fn(),
     findSessionByJoinCode: vi.fn(),
     findSessionById: vi.fn(),
+    findSessionWithQuestions: vi.fn(),
+    findQuestionWithOptions: vi.fn(),
     addParticipant: vi.fn(),
     deleteParticipant: vi.fn(),
     updateSessionStatus: vi.fn(),
+    findParticipantsBySession: vi.fn(),
+    createAnswerBatch: vi.fn(),
+    updateParticipantScores: vi.fn(),
   };
 }
 
@@ -364,6 +386,9 @@ describe('SessionService', () => {
       status: SessionStatus.LIVE,
       currentQuestionIndex: 0,
     });
+    repo.findParticipantsBySession.mockResolvedValue([
+      { id: 'p-1', nickname: 'Player1', score: 0 },
+    ]);
 
     const result = await service.startSession('session-1');
 
