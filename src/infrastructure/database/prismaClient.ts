@@ -20,8 +20,8 @@ export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     adapter,
-    // log:
-    //   env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    log:
+      env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });
 
 // Prevent multiple instances in development
