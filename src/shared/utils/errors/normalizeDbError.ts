@@ -14,36 +14,6 @@ const toTargetFields = (target: unknown): string[] => {
   return [];
 };
 
-/**
- * Extracts constraint field names from Prisma error meta.
- * Handles both standard Prisma (`meta.target`) and driver adapter
- * (`meta.driverAdapterError.cause.constraint.fields`) paths.
- */
-const extractConstraintFields = (
-  meta: Record<string, unknown> | undefined
-): string[] => {
-  if (!meta) return [];
-
-  // Standard Prisma path
-  const fromTarget = toTargetFields(meta.target);
-  if (fromTarget.length > 0) return fromTarget;
-
-  // Driver adapter path (@prisma/adapter-pg)
-  const driverError = meta.driverAdapterError;
-  if (typeof driverError === 'object' && driverError !== null) {
-    const cause = (driverError as Record<string, unknown>).cause;
-    if (typeof cause === 'object' && cause !== null) {
-      const constraint = (cause as Record<string, unknown>).constraint;
-      if (typeof constraint === 'object' && constraint !== null) {
-        const fields = (constraint as Record<string, unknown>).fields;
-        return toTargetFields(fields).map(f => f.replace(/^"|"$/g, ''));
-      }
-    }
-  }
-
-  return [];
-};
-
 export const normalizeDbError = (error: unknown): ErrorCode | null => {
   if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
     return null;
@@ -51,7 +21,7 @@ export const normalizeDbError = (error: unknown): ErrorCode | null => {
 
   switch (error.code) {
     case 'P2002': {
-      const targetFields = extractConstraintFields(error.meta);
+      const targetFields = toTargetFields(error.meta?.target);
 
       if (targetFields.includes('email')) {
         return ERROR_CODES.USER_ALREADY_EXISTS;
