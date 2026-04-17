@@ -5,29 +5,43 @@ import type { SessionRepository } from '../../../src/modules/session/session.rep
 import { ERROR_CODES } from '../../../src/shared/utils/errors/errorCodes.js';
 import { statusCode } from '../../../src/shared/utils/http/statusCodes.js';
 
-// ─── Mock Redis Session State ────────────────────────────────────────────────
-
-vi.mock('@infrastructure/redis/sessionState.repository.js', () => ({
-  createSessionState: vi.fn(),
-  addPlayer: vi.fn(),
-  setActiveQuestion: vi.fn(),
-  getActiveQuestion: vi.fn(),
-  getAllAnswers: vi.fn(),
-  clearQuestionAnswers: vi.fn(),
-  incrementScore: vi.fn(),
-  getLeaderboard: vi.fn(),
-  initLeaderboard: vi.fn(),
-  setSessionEnded: vi.fn(),
-}));
-
-vi.mock('@infrastructure/queue/sessionQueue.js', () => ({
-  scheduleQuestionEvaluation: vi.fn(),
-}));
-
-import * as sessionState from '../../../src/infrastructure/redis/sessionState.repository.js';
-import * as sessionQueue from '../../../src/infrastructure/queue/sessionQueue.js';
-
 // ─── Repo Mock ───────────────────────────────────────────────────────────────
+
+// ─── StateRepo Mock ──────────────────────────────────────────────────────────
+type StateRepoMock = {
+  setActiveQuestion: ReturnType<typeof vi.fn>;
+  getActiveQuestion: ReturnType<typeof vi.fn>;
+  getAllAnswers: ReturnType<typeof vi.fn>;
+  clearQuestionAnswers: ReturnType<typeof vi.fn>;
+  incrementScore: ReturnType<typeof vi.fn>;
+  getLeaderboard: ReturnType<typeof vi.fn>;
+  initLeaderboard: ReturnType<typeof vi.fn>;
+  setSessionEnded: ReturnType<typeof vi.fn>;
+};
+
+function buildStateRepoMock(): StateRepoMock {
+  return {
+    setActiveQuestion: vi.fn(),
+    getActiveQuestion: vi.fn(),
+    getAllAnswers: vi.fn(),
+    clearQuestionAnswers: vi.fn(),
+    incrementScore: vi.fn(),
+    getLeaderboard: vi.fn(),
+    initLeaderboard: vi.fn(),
+    setSessionEnded: vi.fn(),
+  };
+}
+
+// ─── SessionQueue Mock ──────────────────────────────────────────────────────
+type SessionQueueMock = {
+  scheduleQuestionEvaluation: ReturnType<typeof vi.fn>;
+};
+
+function buildSessionQueueMock(): SessionQueueMock {
+  return {
+    scheduleQuestionEvaluation: vi.fn(),
+  };
+}
 
 type RepoMock = {
   createSession: ReturnType<typeof vi.fn>;
@@ -121,7 +135,13 @@ describe('SessionService – advanceQuestion', () => {
 
   it('advances to the next question and schedules evaluation', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const sessionQueue = buildSessionQueueMock();
+    const service = new SessionService(
+      repo as SessionRepository,
+      stateRepo,
+      sessionQueue
+    );
     const session = buildSessionWithQuestions();
 
     repo.findSessionWithQuestions.mockResolvedValue(session);
@@ -141,7 +161,7 @@ describe('SessionService – advanceQuestion', () => {
       { id: 'option-1-wrong', optionText: 'Wrong Answer' },
     ]);
 
-    expect(sessionState.setActiveQuestion).toHaveBeenCalledWith(
+    expect(stateRepo.setActiveQuestion).toHaveBeenCalledWith(
       'session-1',
       'question-1',
       0,
@@ -159,7 +179,13 @@ describe('SessionService – advanceQuestion', () => {
 
   it('throws SESSION_NOT_FOUND when session missing', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const sessionQueue = buildSessionQueueMock();
+    const service = new SessionService(
+      repo as SessionRepository,
+      stateRepo,
+      sessionQueue
+    );
 
     repo.findSessionWithQuestions.mockResolvedValue(null);
 
@@ -171,7 +197,13 @@ describe('SessionService – advanceQuestion', () => {
 
   it('throws SESSION_NOT_LIVE when session is not LIVE', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const sessionQueue = buildSessionQueueMock();
+    const service = new SessionService(
+      repo as SessionRepository,
+      stateRepo,
+      sessionQueue
+    );
 
     repo.findSessionWithQuestions.mockResolvedValue(
       buildSessionWithQuestions({ status: SessionStatus.WAITING })
@@ -185,7 +217,13 @@ describe('SessionService – advanceQuestion', () => {
 
   it('throws INVALID_QUESTION_INDEX when all questions exhausted', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const sessionQueue = buildSessionQueueMock();
+    const service = new SessionService(
+      repo as SessionRepository,
+      stateRepo,
+      sessionQueue
+    );
 
     repo.findSessionWithQuestions.mockResolvedValue(
       buildSessionWithQuestions({ currentQuestionIndex: 2, questionCount: 2 })
@@ -205,10 +243,16 @@ describe('SessionService – evaluateQuestion', () => {
 
   it('evaluates correct MCQ answer and increments score', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const sessionQueue = buildSessionQueueMock();
+    const service = new SessionService(
+      repo as SessionRepository,
+      stateRepo,
+      sessionQueue
+    );
 
     // Participant answered with the correct option
-    vi.mocked(sessionState.getAllAnswers).mockResolvedValue({
+    stateRepo.getAllAnswers.mockResolvedValue({
       'participant-1': 'option-1-correct',
       'participant-2': 'option-1-wrong',
     });
@@ -237,7 +281,7 @@ describe('SessionService – evaluateQuestion', () => {
       ],
     });
 
-    vi.mocked(sessionState.getLeaderboard).mockResolvedValue([
+    stateRepo.getLeaderboard.mockResolvedValue([
       { participantId: 'participant-1', score: 10 },
       { participantId: 'participant-2', score: 0 },
     ]);
@@ -276,8 +320,8 @@ describe('SessionService – evaluateQuestion', () => {
     expect(isLastQuestion).toBe(false);
 
     // Score incremented only for correct answer
-    expect(sessionState.incrementScore).toHaveBeenCalledTimes(1);
-    expect(sessionState.incrementScore).toHaveBeenCalledWith(
+    expect(stateRepo.incrementScore).toHaveBeenCalledTimes(1);
+    expect(stateRepo.incrementScore).toHaveBeenCalledWith(
       'session-1',
       'participant-1',
       10
@@ -300,7 +344,7 @@ describe('SessionService – evaluateQuestion', () => {
     ]);
 
     // Cleanup
-    expect(sessionState.clearQuestionAnswers).toHaveBeenCalledWith(
+    expect(stateRepo.clearQuestionAnswers).toHaveBeenCalledWith(
       'session-1',
       'question-1'
     );
@@ -308,9 +352,15 @@ describe('SessionService – evaluateQuestion', () => {
 
   it('evaluates incorrect answer with score 0', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const sessionQueue = buildSessionQueueMock();
+    const service = new SessionService(
+      repo as SessionRepository,
+      stateRepo,
+      sessionQueue
+    );
 
-    vi.mocked(sessionState.getAllAnswers).mockResolvedValue({
+    stateRepo.getAllAnswers.mockResolvedValue({
       'participant-1': 'option-1-wrong',
     });
 
@@ -338,7 +388,7 @@ describe('SessionService – evaluateQuestion', () => {
       ],
     });
 
-    vi.mocked(sessionState.getLeaderboard).mockResolvedValue([
+    stateRepo.getLeaderboard.mockResolvedValue([
       { participantId: 'participant-1', score: 0 },
     ]);
 
@@ -356,15 +406,21 @@ describe('SessionService – evaluateQuestion', () => {
       'question-1'
     );
 
-    expect(sessionState.incrementScore).not.toHaveBeenCalled();
+    expect(stateRepo.incrementScore).not.toHaveBeenCalled();
     expect(result.leaderboard[0]?.score).toBe(0);
   });
 
   it('evaluates FILL_IN_THE_BLANK with case-insensitive match', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const sessionQueue = buildSessionQueueMock();
+    const service = new SessionService(
+      repo as SessionRepository,
+      stateRepo,
+      sessionQueue
+    );
 
-    vi.mocked(sessionState.getAllAnswers).mockResolvedValue({
+    stateRepo.getAllAnswers.mockResolvedValue({
       'participant-1': 'text:paris',
     });
 
@@ -386,7 +442,7 @@ describe('SessionService – evaluateQuestion', () => {
       ],
     });
 
-    vi.mocked(sessionState.getLeaderboard).mockResolvedValue([
+    stateRepo.getLeaderboard.mockResolvedValue([
       { participantId: 'participant-1', score: 15 },
     ]);
 
@@ -404,7 +460,7 @@ describe('SessionService – evaluateQuestion', () => {
       'question-1'
     );
 
-    expect(sessionState.incrementScore).toHaveBeenCalledWith(
+    expect(stateRepo.incrementScore).toHaveBeenCalledWith(
       'session-1',
       'participant-1',
       15
@@ -414,9 +470,15 @@ describe('SessionService – evaluateQuestion', () => {
 
   it('handles no answers submitted (empty Redis hash)', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const sessionQueue = buildSessionQueueMock();
+    const service = new SessionService(
+      repo as SessionRepository,
+      stateRepo,
+      sessionQueue
+    );
 
-    vi.mocked(sessionState.getAllAnswers).mockResolvedValue({});
+    stateRepo.getAllAnswers.mockResolvedValue({});
 
     repo.findQuestionWithOptions.mockResolvedValue({
       id: 'question-1',
@@ -436,7 +498,7 @@ describe('SessionService – evaluateQuestion', () => {
       ],
     });
 
-    vi.mocked(sessionState.getLeaderboard).mockResolvedValue([]);
+    stateRepo.getLeaderboard.mockResolvedValue([]);
     repo.findParticipantsBySession.mockResolvedValue([]);
     repo.createAnswerBatch.mockResolvedValue(undefined);
     repo.findSessionWithQuestions.mockResolvedValue(
@@ -454,9 +516,15 @@ describe('SessionService – evaluateQuestion', () => {
 
   it('marks session ENDED after last question', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const sessionQueue = buildSessionQueueMock();
+    const service = new SessionService(
+      repo as SessionRepository,
+      stateRepo,
+      sessionQueue
+    );
 
-    vi.mocked(sessionState.getAllAnswers).mockResolvedValue({
+    stateRepo.getAllAnswers.mockResolvedValue({
       'participant-1': 'option-1-correct',
     });
 
@@ -478,7 +546,7 @@ describe('SessionService – evaluateQuestion', () => {
       ],
     });
 
-    vi.mocked(sessionState.getLeaderboard).mockResolvedValue([
+    stateRepo.getLeaderboard.mockResolvedValue([
       { participantId: 'participant-1', score: 20 },
     ]);
 
@@ -509,7 +577,7 @@ describe('SessionService – evaluateQuestion', () => {
     });
 
     // Session marked ENDED in Redis
-    expect(sessionState.setSessionEnded).toHaveBeenCalledWith('session-1');
+    expect(stateRepo.setSessionEnded).toHaveBeenCalledWith('session-1');
 
     // Scores synced to DB
     expect(repo.updateParticipantScores).toHaveBeenCalledWith([
@@ -519,9 +587,15 @@ describe('SessionService – evaluateQuestion', () => {
 
   it('throws QUESTION_NOT_FOUND when question missing', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const sessionQueue = buildSessionQueueMock();
+    const service = new SessionService(
+      repo as SessionRepository,
+      stateRepo,
+      sessionQueue
+    );
 
-    vi.mocked(sessionState.getAllAnswers).mockResolvedValue({});
+    stateRepo.getAllAnswers.mockResolvedValue({});
     repo.findQuestionWithOptions.mockResolvedValue(null);
 
     await expect(
