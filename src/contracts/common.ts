@@ -17,7 +17,7 @@ export const createSuccessResponseSchema = (dataSchema: any): any =>
   z.object({
     success: z.literal(true),
     message: z.string(),
-    data: dataSchema.optional(),
+    ...dataSchema.shape,
     meta: metaSchema,
   });
 
