@@ -4,12 +4,26 @@ import { createClient } from 'redis';
 import { Server as SocketIOServer } from 'socket.io';
 import { env } from '@config/env.js';
 import logger from '@infrastructure/logger/logger.js';
-import { socketAuthMiddleware } from './socketAuth.js';
-import { registerSessionSocketHandlers } from './sessionSocket.js';
+import { socketAuthMiddleware } from '@shared/middlewares/socketAuth.js';
+import { SessionSocketHandler } from '@modules/session/session.socket.js';
+import type { SessionService } from '@modules/session/session.service.js';
+import type {
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData,
+} from './socketTypes.js';
 
 type RedisClient = ReturnType<typeof createClient>;
 
-let io: SocketIOServer | null = null;
+type AppSocketServer = SocketIOServer<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
+
+let io: AppSocketServer | null = null;
 let pubClient: RedisClient | null = null;
 let subClient: RedisClient | null = null;
 
@@ -75,33 +89,51 @@ const connectAdapterClients = async () => {
 /**
  * Initializes a singleton Socket.IO server on top of the provided HTTP server.
  *
- * If Redis adapter clients are not connected yet, they are created and connected
- * before attaching the adapter.
+ * The `sessionService` is injected from `server.ts` (the single composition
+ * root) so the socket layer owns zero wiring logic — it only sets up transport.
  *
- * @param httpServer Node HTTP server hosting the Express app.
+ * @param httpServer     Node HTTP server hosting the Express app.
+ * @param sessionService Injected session service for socket handlers.
  * @returns Initialized Socket.IO server instance.
  */
-export const setupSocketServer = async (httpServer: HttpServer) => {
+export const setupSocketServer = async (
+  httpServer: HttpServer,
+  sessionService: SessionService
+) => {
   if (!io) {
-    io = new SocketIOServer(httpServer, {
+    io = new SocketIOServer<
+      ClientToServerEvents,
+      ServerToClientEvents,
+      InterServerEvents,
+      SocketData
+    >(httpServer, {
       cors: {
         origin: env.CORS_ORIGINS,
         credentials: true,
       },
     });
 
+    // Build the handler once; each connection calls handler.register(socket)
+    const socketHandler = new SessionSocketHandler(io, sessionService);
+
     io.use(socketAuthMiddleware);
 
     io.on('connection', socket => {
-      logger.info(
-        { socketId: socket.id, userId: socket.data.userId },
-        'Socket connected'
-      );
+      const userId = socket.data.userId ?? null;
 
-      registerSessionSocketHandlers(io!, socket);
+      logger.info({ socketId: socket.id, userId }, 'Socket connected');
+
+      // Immediately tell the client whether they are authenticated or a guest.
+      // The frontend uses this to gate auth-required UI without an extra round-trip.
+      socket.emit('socket:ready', { userId });
+
+      socketHandler.register(socket);
 
       socket.on('disconnect', reason => {
-        logger.info({ socketId: socket.id, reason }, 'Socket disconnected');
+        logger.info(
+          { socketId: socket.id, userId, reason },
+          'Socket disconnected'
+        );
       });
     });
   }
@@ -124,7 +156,7 @@ export const setupSocketServer = async (httpServer: HttpServer) => {
  *
  * @throws Error when called before setupSocketServer.
  */
-export const getSocketServer = () => {
+export const getSocketServer = (): AppSocketServer => {
   if (!io) {
     throw new Error('Socket.IO server is not initialized');
   }

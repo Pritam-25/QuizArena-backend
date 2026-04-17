@@ -7,6 +7,25 @@
   "item": [
     {
       "name": "Auth - Register Owner",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Register status is 201 or 409', function () {",
+              "  pm.expect([201, 409]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test('Register response shape is valid', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.have.property('success');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "id": "257aa1a2-3993-4d48-b03e-3e238f383fe2",
       "request": {
         "method": "POST",
         "header": [
@@ -25,45 +44,10 @@
           "path": ["auth", "register"]
         }
       },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Register status is 201 or 409', function () {",
-              "  pm.expect([201, 409]).to.include(pm.response.code);",
-              "});",
-              "",
-              "pm.test('Register response shape is valid', function () {",
-              "  const body = pm.response.json();",
-              "  pm.expect(body).to.have.property('success');",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "Auth - Login Owner",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"{{ownerEmail}}\",\n  \"password\": \"{{ownerPassword}}\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/auth/login",
-          "host": ["{{baseUrl}}"],
-          "path": ["auth", "login"]
-        }
-      },
       "event": [
         {
           "listen": "test",
@@ -83,10 +67,8 @@
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "Quiz - Create Quiz",
+      ],
+      "id": "21d0efd8-d869-4818-a9ce-ceae9f44b1c5",
       "request": {
         "method": "POST",
         "header": [
@@ -97,14 +79,18 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"title\": \"{{quizTitle}}\",\n  \"description\": \"{{quizDescription}}\"\n}"
+          "raw": "{\n  \"email\": \"{{ownerEmail}}\",\n  \"password\": \"{{ownerPassword}}\"\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/quizzes",
+          "raw": "{{baseUrl}}/auth/login",
           "host": ["{{baseUrl}}"],
-          "path": ["quizzes"]
+          "path": ["auth", "login"]
         }
       },
+      "response": []
+    },
+    {
+      "name": "Quiz - Create Quiz",
       "event": [
         {
           "listen": "test",
@@ -124,10 +110,8 @@
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "Quiz - Add Question 1",
+      ],
+      "id": "db9465ac-187c-4174-b273-86acb34ea10a",
       "request": {
         "method": "POST",
         "header": [
@@ -138,14 +122,18 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"questionText\": \"{{question1Text}}\",\n  \"type\": \"MCQ\",\n  \"timeLimit\": 30,\n  \"points\": 1\n}"
+          "raw": "{\n  \"title\": \"{{quizTitle}}\",\n  \"description\": \"{{quizDescription}}\"\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/quizzes/{{quizId}}/questions",
+          "raw": "{{baseUrl}}/quizzes",
           "host": ["{{baseUrl}}"],
-          "path": ["quizzes", "{{quizId}}", "questions"]
+          "path": ["quizzes"]
         }
       },
+      "response": []
+    },
+    {
+      "name": "Quiz - Add Question 1",
       "event": [
         {
           "listen": "test",
@@ -168,10 +156,8 @@
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "Quiz - Add Question 2 (After Q1)",
+      ],
+      "id": "b43f82d2-052d-43e2-aa16-5789704111db",
       "request": {
         "method": "POST",
         "header": [
@@ -182,7 +168,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"questionText\": \"{{question2Text}}\",\n  \"type\": \"MCQ\",\n  \"timeLimit\": 30,\n  \"points\": 1,\n  \"prevOrder\": \"{{q1Order}}\"\n}"
+          "raw": "{\n  \"questionText\": \"{{question1Text}}\",\n  \"type\": \"MCQ\",\n  \"timeLimit\": 30,\n  \"points\": 1\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/quizzes/{{quizId}}/questions",
@@ -190,6 +176,10 @@
           "path": ["quizzes", "{{quizId}}", "questions"]
         }
       },
+      "response": []
+    },
+    {
+      "name": "Quiz - Add Question 2 (After Q1)",
       "event": [
         {
           "listen": "test",
@@ -212,10 +202,8 @@
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "Quiz - Add Options to Q1",
+      ],
+      "id": "4b845245-b04e-4bf8-a337-bad74dc25c78",
       "request": {
         "method": "POST",
         "header": [
@@ -226,14 +214,18 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "[\n  { \"optionText\": \"Paris\", \"isCorrect\": true },\n  { \"optionText\": \"Berlin\", \"isCorrect\": false },\n  { \"optionText\": \"Madrid\", \"isCorrect\": false },\n  { \"optionText\": \"Rome\", \"isCorrect\": false }\n]"
+          "raw": "{\n  \"questionText\": \"{{question2Text}}\",\n  \"type\": \"MCQ\",\n  \"timeLimit\": 30,\n  \"points\": 1,\n  \"prevOrder\": \"{{q1Order}}\"\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/quizzes/questions/{{q1Id}}/options",
+          "raw": "{{baseUrl}}/quizzes/{{quizId}}/questions",
           "host": ["{{baseUrl}}"],
-          "path": ["quizzes", "questions", "{{q1Id}}", "options"]
+          "path": ["quizzes", "{{quizId}}", "questions"]
         }
       },
+      "response": []
+    },
+    {
+      "name": "Quiz - Add Options to Q1",
       "event": [
         {
           "listen": "test",
@@ -252,12 +244,10 @@
             ]
           }
         }
-      ]
-    },
-    {
-      "name": "Quiz - Reorder Q2 Before Q1",
+      ],
+      "id": "109f3386-e9db-4318-b0a0-1d80ec82429c",
       "request": {
-        "method": "PATCH",
+        "method": "POST",
         "header": [
           {
             "key": "Content-Type",
@@ -266,14 +256,18 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nextReorderToken\": \"{{q1Order}}\"\n}"
+          "raw": "[\n  { \"optionText\": \"Paris\", \"isCorrect\": true },\n  { \"optionText\": \"Berlin\", \"isCorrect\": false },\n  { \"optionText\": \"Madrid\", \"isCorrect\": false },\n  { \"optionText\": \"Rome\", \"isCorrect\": false }\n]"
         },
         "url": {
-          "raw": "{{baseUrl}}/quizzes/{{quizId}}/questions/{{q2Id}}/reorder",
+          "raw": "{{baseUrl}}/quizzes/questions/{{q1Id}}/options",
           "host": ["{{baseUrl}}"],
-          "path": ["quizzes", "{{quizId}}", "questions", "{{q2Id}}", "reorder"]
+          "path": ["quizzes", "questions", "{{q1Id}}", "options"]
         }
       },
+      "response": []
+    },
+    {
+      "name": "Quiz - Reorder Q2 Before Q1",
       "event": [
         {
           "listen": "test",
@@ -293,18 +287,30 @@
             ]
           }
         }
-      ]
+      ],
+      "id": "112c757a-57be-4422-8209-0fd182871236",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nextReorderToken\": \"{{q1Order}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/quizzes/{{quizId}}/questions/{{q2Id}}/reorder",
+          "host": ["{{baseUrl}}"],
+          "path": ["quizzes", "{{quizId}}", "questions", "{{q2Id}}", "reorder"]
+        }
+      },
+      "response": []
     },
     {
       "name": "Quiz - Get Quiz By Id",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/quizzes/{{quizId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["quizzes", "{{quizId}}"]
-        }
-      },
       "event": [
         {
           "listen": "test",
@@ -324,28 +330,21 @@
             ]
           }
         }
-      ]
+      ],
+      "id": "07487bb7-5b46-4f75-8f43-57d33ecc9e58",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/quizzes/{{quizId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["quizzes", "{{quizId}}"]
+        }
+      },
+      "response": []
     },
     {
       "name": "Session - Create Session",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"quizId\": \"{{quizId}}\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/sessions",
-          "host": ["{{baseUrl}}"],
-          "path": ["sessions"]
-        }
-      },
       "event": [
         {
           "listen": "test",
@@ -368,18 +367,30 @@
             ]
           }
         }
-      ]
+      ],
+      "id": "f03e101d-de72-4b04-a2b4-3d0b6a2bd1ae",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"quizId\": \"{{quizId}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/sessions",
+          "host": ["{{baseUrl}}"],
+          "path": ["sessions"]
+        }
+      },
+      "response": []
     },
     {
       "name": "Session - Get Session By Id",
-      "request": {
-        "method": "GET",
-        "url": {
-          "raw": "{{baseUrl}}/sessions/{{sessionId}}",
-          "host": ["{{baseUrl}}"],
-          "path": ["sessions", "{{sessionId}}"]
-        }
-      },
       "event": [
         {
           "listen": "test",
@@ -392,28 +403,21 @@
             ]
           }
         }
-      ]
+      ],
+      "id": "e7dc5510-7315-4127-8539-63cc183f8af6",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/sessions/{{sessionId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["sessions", "{{sessionId}}"]
+        }
+      },
+      "response": []
     },
     {
       "name": "Session - Join Session",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"joinCode\": \"{{sessionJoinCode}}\",\n  \"nickname\": \"{{participantNickname}}\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/sessions/join",
-          "host": ["{{baseUrl}}"],
-          "path": ["sessions", "join"]
-        }
-      },
       "event": [
         {
           "listen": "test",
@@ -433,18 +437,30 @@
             ]
           }
         }
-      ]
+      ],
+      "id": "8c41cafa-3b1a-412f-a1f5-4b1716f0e83d",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"joinCode\": \"{{sessionJoinCode}}\",\n  \"nickname\": \"{{participantNickname}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/sessions/join",
+          "host": ["{{baseUrl}}"],
+          "path": ["sessions", "join"]
+        }
+      },
+      "response": []
     },
     {
       "name": "Session - Start Session",
-      "request": {
-        "method": "POST",
-        "url": {
-          "raw": "{{baseUrl}}/sessions/{{sessionId}}/start",
-          "host": ["{{baseUrl}}"],
-          "path": ["sessions", "{{sessionId}}", "start"]
-        }
-      },
       "event": [
         {
           "listen": "test",
@@ -457,43 +473,63 @@
             ]
           }
         }
-      ]
+      ],
+      "id": "447b060a-2635-49ea-9c59-8d664f644d0e",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/sessions/{{sessionId}}/start",
+          "host": ["{{baseUrl}}"],
+          "path": ["sessions", "{{sessionId}}", "start"]
+        }
+      },
+      "response": []
     }
   ],
   "variable": [
     {
+      "id": "72a0d597-04de-47cf-9e5f-3088b6fc9141",
       "key": "baseUrl",
       "value": "http://localhost:4000/api/v1"
     },
     {
+      "id": "6069846f-b582-4d4c-a27c-de9121964038",
       "key": "ownerUsername",
       "value": "owner_user_1"
     },
     {
+      "id": "9a18f3a9-4f32-41e4-8519-61a799ee9764",
       "key": "ownerEmail",
       "value": "owner_user_1@example.com"
     },
     {
+      "id": "35a715c8-7a7a-4f83-b227-c429437a4e5a",
       "key": "ownerPassword",
       "value": "password123"
     },
     {
+      "id": "3797d71d-9da8-4635-bb02-d661a94bc973",
       "key": "quizTitle",
       "value": "Postman E2E Quiz"
     },
     {
+      "id": "4c8524f9-485a-4716-ab9a-f4b4fdccf2fe",
       "key": "quizDescription",
       "value": "Validate quiz ordering and auth behavior"
     },
     {
+      "id": "2ebed494-ba53-4052-be89-387094d28598",
       "key": "question1Text",
       "value": "What is the capital of France?"
     },
     {
+      "id": "13a4cac4-3d52-4b9e-8673-f5eb505e2fe2",
       "key": "question2Text",
       "value": "What is the capital of Japan?"
     },
     {
+      "id": "e3bc2416-0a7a-438c-bd87-de7fdf852529",
       "key": "participantNickname",
       "value": "player_one"
     }

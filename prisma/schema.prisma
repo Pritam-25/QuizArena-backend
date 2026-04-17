@@ -68,6 +68,7 @@ model Question {
   quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   options Option[]
+  answers Answer[]
 
   @@unique([quizId, order])
 }
@@ -79,6 +80,8 @@ model Option {
 
   questionId String
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  answers Answer[]
 
   @@unique([questionId, optionText])
   @@index([questionId])
@@ -94,7 +97,7 @@ model Session {
   quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   hostId String
-  host   User   @relation(fields: [hostId], references: [id])
+  host   User   @relation(fields: [hostId], references: [id], onDelete: Cascade)
 
   currentQuestionIndex Int @default(0)
 
@@ -116,5 +119,29 @@ model Participant {
 
   joinedAt DateTime @default(now())
 
+  answers Answer[]
+
   @@unique([sessionId, nickname])
+}
+
+
+model Answer {
+  id String @id @default(uuid())
+
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  optionId String?
+  option   Option? @relation(fields: [optionId], references: [id])
+
+  answerText  String?  // For fill in the blank questions
+  isCorrect   Boolean
+  scoreEarned Int
+
+  answeredAt DateTime @default(now())
+
+  @@unique([participantId, questionId])
 }

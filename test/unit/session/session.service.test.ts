@@ -3,23 +3,24 @@ import { SessionStatus } from '../../../src/generated/prisma/enums.js';
 import logger from '../../../src/infrastructure/logger/logger.js';
 import { SessionService } from '../../../src/modules/session/session.service.js';
 import type { SessionRepository } from '../../../src/modules/session/session.repository.js';
+import type { SessionStateRepository } from '../../../src/infrastructure/redis/sessionState.repository.js';
+import type { SessionQueue } from '../../../src/infrastructure/queue/sessionQueue.js';
 import { ERROR_CODES } from '../../../src/shared/utils/errors/errorCodes.js';
 import { statusCode } from '../../../src/shared/utils/http/statusCodes.js';
-import * as sessionState from '../../../src/infrastructure/session.state.js';
 
-vi.mock('@infrastructure/session.state.js', () => ({
-  createSessionState: vi.fn(),
-  addPlayer: vi.fn(),
-}));
+// ─── Mock Factories ───────────────────────────────────────────────────────────
+// Dependencies are injected as plain mock objects — no vi.mock() needed.
 
 type RepoMock = {
-  createSession: ReturnType<typeof vi.fn>;
-  deleteSession: ReturnType<typeof vi.fn>;
-  findSessionByJoinCode: ReturnType<typeof vi.fn>;
-  findSessionById: ReturnType<typeof vi.fn>;
-  addParticipant: ReturnType<typeof vi.fn>;
-  deleteParticipant: ReturnType<typeof vi.fn>;
-  updateSessionStatus: ReturnType<typeof vi.fn>;
+  [K in keyof SessionRepository]: ReturnType<typeof vi.fn>;
+};
+
+type StateRepoMock = {
+  [K in keyof SessionStateRepository]: ReturnType<typeof vi.fn>;
+};
+
+type QueueMock = {
+  [K in keyof SessionQueue]: ReturnType<typeof vi.fn>;
 };
 
 function buildRepoMock(): RepoMock {
@@ -28,11 +29,53 @@ function buildRepoMock(): RepoMock {
     deleteSession: vi.fn(),
     findSessionByJoinCode: vi.fn(),
     findSessionById: vi.fn(),
+    findSessionWithQuestions: vi.fn(),
+    findQuestionWithOptions: vi.fn(),
     addParticipant: vi.fn(),
     deleteParticipant: vi.fn(),
     updateSessionStatus: vi.fn(),
+    findParticipantsBySession: vi.fn(),
+    createAnswerBatch: vi.fn(),
+    updateParticipantScores: vi.fn(),
   };
 }
+
+function buildStateRepoMock(): StateRepoMock {
+  return {
+    createSessionState: vi.fn(),
+    addPlayer: vi.fn(),
+    setActiveQuestion: vi.fn(),
+    getActiveQuestion: vi.fn(),
+    updateAnswer: vi.fn(),
+    getAllAnswers: vi.fn(),
+    clearQuestionAnswers: vi.fn(),
+    initLeaderboard: vi.fn(),
+    incrementScore: vi.fn(),
+    getLeaderboard: vi.fn(),
+    setSessionEnded: vi.fn(),
+  };
+}
+
+function buildQueueMock(): QueueMock {
+  return {
+    scheduleQuestionEvaluation: vi.fn(),
+    close: vi.fn(),
+  };
+}
+
+function buildService(
+  repo: RepoMock,
+  stateRepo: StateRepoMock,
+  queue: QueueMock
+) {
+  return new SessionService(
+    repo as unknown as SessionRepository,
+    stateRepo as unknown as SessionStateRepository,
+    queue as unknown as SessionQueue
+  );
+}
+
+// ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('SessionService', () => {
   beforeEach(() => {
@@ -41,7 +84,9 @@ describe('SessionService', () => {
 
   it('createSession persists session and returns prefixed join link', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const queue = buildQueueMock();
+    const service = buildService(repo, stateRepo, queue);
 
     repo.createSession.mockResolvedValue({
       id: 'session-1',
@@ -69,12 +114,14 @@ describe('SessionService', () => {
     expect(result.joinCode).toBe(
       'quizArena.com/123e4567-e89b-12d3-a456-426614174000'
     );
-    expect(sessionState.createSessionState).toHaveBeenCalledWith('session-1');
+    expect(stateRepo.createSessionState).toHaveBeenCalledWith('session-1');
   });
 
   it('createSession compensates by deleting db row when redis state init fails', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const queue = buildQueueMock();
+    const service = buildService(repo, stateRepo, queue);
 
     const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => logger);
     const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => logger);
@@ -91,16 +138,13 @@ describe('SessionService', () => {
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
     });
 
-    vi.mocked(sessionState.createSessionState).mockRejectedValue(
+    stateRepo.createSessionState.mockRejectedValue(
       new Error('redis unavailable')
     );
     repo.deleteSession.mockResolvedValue({ id: 'session-1' });
 
     await expect(
-      service.createSession({
-        quizId: 'quiz-1',
-        hostId: 'host-1',
-      })
+      service.createSession({ quizId: 'quiz-1', hostId: 'host-1' })
     ).rejects.toMatchObject({
       statusCode: statusCode.internalError,
       errorCode: ERROR_CODES.INTERNAL_ERROR,
@@ -113,7 +157,9 @@ describe('SessionService', () => {
 
   it('createSession logs cleanup failure when compensation delete fails', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const queue = buildQueueMock();
+    const service = buildService(repo, stateRepo, queue);
 
     const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => logger);
 
@@ -129,16 +175,13 @@ describe('SessionService', () => {
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
     });
 
-    vi.mocked(sessionState.createSessionState).mockRejectedValue(
+    stateRepo.createSessionState.mockRejectedValue(
       new Error('redis unavailable')
     );
     repo.deleteSession.mockRejectedValue(new Error('delete failed'));
 
     await expect(
-      service.createSession({
-        quizId: 'quiz-1',
-        hostId: 'host-1',
-      })
+      service.createSession({ quizId: 'quiz-1', hostId: 'host-1' })
     ).rejects.toMatchObject({
       statusCode: statusCode.internalError,
       errorCode: ERROR_CODES.INTERNAL_ERROR,
@@ -150,7 +193,7 @@ describe('SessionService', () => {
 
   it('joinSession returns SESSION_NOT_FOUND when session does not exist', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const service = buildService(repo, buildStateRepoMock(), buildQueueMock());
     const joinCode = '123e4567-e89b-12d3-a456-426614174000';
 
     repo.findSessionByJoinCode.mockResolvedValue(null);
@@ -170,7 +213,7 @@ describe('SessionService', () => {
 
   it('joinSession returns SESSION_NOT_JOINABLE when session status is not WAITING', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const service = buildService(repo, buildStateRepoMock(), buildQueueMock());
 
     repo.findSessionByJoinCode.mockResolvedValue({
       id: 'session-1',
@@ -190,7 +233,7 @@ describe('SessionService', () => {
 
   it('joinSession bubbles repository errors from addParticipant', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const service = buildService(repo, buildStateRepoMock(), buildQueueMock());
 
     repo.findSessionByJoinCode.mockResolvedValue({
       id: 'session-1',
@@ -210,7 +253,8 @@ describe('SessionService', () => {
 
   it('joinSession returns participant payload on success', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const service = buildService(repo, stateRepo, buildQueueMock());
 
     const participant = {
       id: 'participant-1',
@@ -231,11 +275,8 @@ describe('SessionService', () => {
       nickname: 'player-one',
     });
 
-    expect(result).toEqual({
-      sessionId: 'session-1',
-      participant,
-    });
-    expect(sessionState.addPlayer).toHaveBeenCalledWith(
+    expect(result).toEqual({ sessionId: 'session-1', participant });
+    expect(stateRepo.addPlayer).toHaveBeenCalledWith(
       'session-1',
       'participant-1'
     );
@@ -243,7 +284,8 @@ describe('SessionService', () => {
 
   it('joinSession compensates by deleting participant when addPlayer fails', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const service = buildService(repo, stateRepo, buildQueueMock());
 
     const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => logger);
     const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => logger);
@@ -261,9 +303,7 @@ describe('SessionService', () => {
       status: SessionStatus.WAITING,
     });
     repo.addParticipant.mockResolvedValue(participant);
-    vi.mocked(sessionState.addPlayer).mockRejectedValue(
-      new Error('redis unavailable')
-    );
+    stateRepo.addPlayer.mockRejectedValue(new Error('redis unavailable'));
     repo.deleteParticipant.mockResolvedValue(participant);
 
     await expect(
@@ -277,7 +317,7 @@ describe('SessionService', () => {
     });
 
     expect(repo.addParticipant).toHaveBeenCalledWith('session-1', 'player-one');
-    expect(sessionState.addPlayer).toHaveBeenCalledWith(
+    expect(stateRepo.addPlayer).toHaveBeenCalledWith(
       'session-1',
       'participant-1'
     );
@@ -288,7 +328,8 @@ describe('SessionService', () => {
 
   it('joinSession logs cleanup failure when deleteParticipant fails after addPlayer error', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const service = buildService(repo, stateRepo, buildQueueMock());
 
     const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => logger);
 
@@ -305,9 +346,7 @@ describe('SessionService', () => {
       status: SessionStatus.WAITING,
     });
     repo.addParticipant.mockResolvedValue(participant);
-    vi.mocked(sessionState.addPlayer).mockRejectedValue(
-      new Error('redis unavailable')
-    );
+    stateRepo.addPlayer.mockRejectedValue(new Error('redis unavailable'));
     repo.deleteParticipant.mockRejectedValue(new Error('delete failed'));
 
     await expect(
@@ -326,7 +365,7 @@ describe('SessionService', () => {
 
   it('startSession returns SESSION_NOT_FOUND when session is missing', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const service = buildService(repo, buildStateRepoMock(), buildQueueMock());
 
     repo.findSessionById.mockResolvedValue(null);
 
@@ -338,7 +377,7 @@ describe('SessionService', () => {
 
   it('startSession returns SESSION_NOT_STARTABLE when session status is not WAITING', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const service = buildService(repo, buildStateRepoMock(), buildQueueMock());
 
     repo.findSessionById.mockResolvedValue({
       id: 'session-1',
@@ -353,7 +392,8 @@ describe('SessionService', () => {
 
   it('startSession transitions to LIVE and resets question index', async () => {
     const repo = buildRepoMock();
-    const service = new SessionService(repo as unknown as SessionRepository);
+    const stateRepo = buildStateRepoMock();
+    const service = buildService(repo, stateRepo, buildQueueMock());
 
     repo.findSessionById.mockResolvedValue({
       id: 'session-1',
@@ -364,6 +404,9 @@ describe('SessionService', () => {
       status: SessionStatus.LIVE,
       currentQuestionIndex: 0,
     });
+    repo.findParticipantsBySession.mockResolvedValue([
+      { id: 'p-1', nickname: 'Player1', score: 0 },
+    ]);
 
     const result = await service.startSession('session-1');
 
@@ -375,6 +418,9 @@ describe('SessionService', () => {
         startedAt: expect.any(Date),
       })
     );
+    expect(stateRepo.initLeaderboard).toHaveBeenCalledWith('session-1', [
+      'p-1',
+    ]);
     expect(result).toEqual({
       id: 'session-1',
       status: SessionStatus.LIVE,
