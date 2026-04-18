@@ -3,7 +3,7 @@ import { createMeta } from './baseResponse.js';
 
 export const successResponse = <T>(
   message: string,
-  data?: T,
+  data: T,
   metaExtra?: Record<string, unknown>
 ) => ({
   success: true as const,

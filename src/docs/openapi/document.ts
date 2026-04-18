@@ -63,73 +63,6 @@ const buildErrorDescription = (
   errorCode: (typeof ERROR_CODES)[keyof typeof ERROR_CODES]
 ) => `${status} ${ERROR_MESSAGES[errorCode]}`;
 
-const attachRequestExamples = (document: any) => {
-  setJsonRequestExample(document, '/api/v1/auth/register', 'post', {
-    username: 'john_doe',
-    email: 'john@example.com',
-    password: 'password123',
-  });
-
-  setJsonRequestExample(document, '/api/v1/auth/login', 'post', {
-    email: 'john@example.com',
-    password: 'password123',
-  });
-
-  setJsonRequestExample(document, '/api/v1/users', 'post', {
-    username: 'guest_player',
-  });
-
-  setJsonRequestExample(document, '/api/v1/quizzes', 'post', {
-    title: 'General Knowledge Quiz',
-    description: 'A mixed quiz for all players',
-    isPublished: false,
-  });
-
-  setJsonRequestExample(
-    document,
-    '/api/v1/quizzes/{quizId}/questions',
-    'post',
-    {
-      questionText: 'What is the capital of France?',
-      type: 'MCQ',
-      timeLimit: 30,
-      points: 1,
-      prevOrder: 'a',
-      nextOrder: 'c',
-    }
-  );
-
-  setJsonRequestExample(
-    document,
-    '/api/v1/quizzes/questions/{questionId}/options',
-    'post',
-    [
-      { optionText: 'Paris', isCorrect: true },
-      { optionText: 'Berlin', isCorrect: false },
-      { optionText: 'Madrid', isCorrect: false },
-    ]
-  );
-
-  setJsonRequestExample(
-    document,
-    '/api/v1/quizzes/{quizId}/questions/{questionId}/reorder',
-    'patch',
-    {
-      prevReorderToken: 'a',
-      nextReorderToken: 'c',
-    }
-  );
-
-  setJsonRequestExample(document, '/api/v1/sessions', 'post', {
-    quizId: '11111111-1111-1111-1111-111111111111',
-  });
-
-  setJsonRequestExample(document, '/api/v1/sessions/join', 'post', {
-    joinCode: '11111111-1111-1111-1111-111111111111',
-    nickname: 'PlayerOne',
-  });
-};
-
 const attachResponseExamples = (document: any) => {
   const attachMappedError = (
     path: string,
@@ -147,6 +80,8 @@ const attachResponseExamples = (document: any) => {
     );
   };
 
+  /** Auth registration scheam Examples 
+   * 
   setJsonResponseExample(
     document,
     '/api/v1/auth/register',
@@ -166,14 +101,13 @@ const attachResponseExamples = (document: any) => {
     },
     'User registered successfully'
   );
+  */
 
-  setJsonResponseExample(
-    document,
+  attachMappedError(
     '/api/v1/auth/register',
     'post',
     statusCode.conflict,
-    buildErrorExample(statusCode.conflict, ERROR_CODES.USER_ALREADY_EXISTS),
-    buildErrorDescription(statusCode.conflict, ERROR_CODES.USER_ALREADY_EXISTS)
+    ERROR_CODES.USER_ALREADY_EXISTS
   );
 
   attachMappedError(
@@ -239,8 +173,6 @@ export const generateOpenApiDocument = (): any => {
   });
 
   document.security = [{ sessionCookie: [] }];
-  attachRequestExamples(document);
   attachResponseExamples(document);
-
   return document;
 };

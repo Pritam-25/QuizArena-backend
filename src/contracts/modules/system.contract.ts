@@ -18,7 +18,7 @@ export const systemContract = c.router(
               timestamp: z.string(),
               uptime: z.number(),
             })
-            .passthrough() as any
+            .passthrough()
         ),
       },
       metadata: { tags: ['System'] },

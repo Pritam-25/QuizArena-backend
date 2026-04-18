@@ -1,6 +1,11 @@
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod3';
 import { createUserBodySchema, uuidParamSchema } from '@contracts/schemas.js';
+import {
+  createSuccessResponseSchema,
+  errorResponseSchema,
+  userShapeSchema,
+} from '@contracts/common.js';
 
 const c = initContract();
 
@@ -12,12 +17,7 @@ export const userContract = c.router(
       summary: 'Create user',
       body: createUserBodySchema,
       responses: {
-        201: z
-          .object({
-            message: z.string(),
-            data: z.unknown(),
-          })
-          .passthrough() as any,
+        201: createSuccessResponseSchema(userShapeSchema),
       },
       metadata: { tags: ['User'] },
     },
@@ -27,17 +27,8 @@ export const userContract = c.router(
       summary: 'Get user by id',
       pathParams: uuidParamSchema,
       responses: {
-        200: z
-          .object({
-            message: z.string(),
-            data: z.unknown(),
-          })
-          .passthrough() as any,
-        404: z
-          .object({
-            message: z.string(),
-          })
-          .passthrough() as any,
+        200: createSuccessResponseSchema(userShapeSchema),
+        404: errorResponseSchema,
       },
       metadata: { tags: ['User'] },
     },
