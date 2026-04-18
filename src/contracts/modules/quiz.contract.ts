@@ -26,7 +26,7 @@ export const quizContract = c.router(
       summary: 'Create a quiz',
       body: createQuizBodySchema,
       responses: {
-        201: createSuccessResponseSchema(quizShapeSchema),
+        201: createSuccessResponseSchema(z.object({ quiz: quizShapeSchema })),
         401: errorResponseSchema,
       },
       metadata: { tags: ['Quiz'] },
@@ -36,7 +36,9 @@ export const quizContract = c.router(
       path: '/quizzes',
       summary: 'Get all quizzes',
       responses: {
-        200: createSuccessResponseSchema(z.array(quizShapeSchema) as any),
+        200: createSuccessResponseSchema(
+          z.array(z.object({ quiz: quizShapeSchema })) as any
+        ),
       },
       metadata: { tags: ['Quiz'] },
     },
@@ -46,7 +48,7 @@ export const quizContract = c.router(
       summary: 'Get quiz by id',
       pathParams: uuidParamSchema,
       responses: {
-        200: createSuccessResponseSchema(quizShapeSchema),
+        200: createSuccessResponseSchema(z.object({ quiz: quizShapeSchema })),
         404: errorResponseSchema,
       },
       metadata: { tags: ['Quiz'] },
@@ -58,7 +60,9 @@ export const quizContract = c.router(
       pathParams: quizIdParamSchema,
       body: addQuestionBodySchema,
       responses: {
-        201: createSuccessResponseSchema(questionShapeSchema),
+        201: createSuccessResponseSchema(
+          z.object({ question: questionShapeSchema })
+        ),
         401: errorResponseSchema,
       },
       metadata: { tags: ['Quiz'] },
@@ -72,7 +76,9 @@ export const quizContract = c.router(
         .array(addOptionsItemBodySchema)
         .default([addOptionsItemBodySchema.parse({})]) as any,
       responses: {
-        201: createSuccessResponseSchema(z.unknown()),
+        201: createSuccessResponseSchema(
+          z.object({ options: z.array(z.any()) })
+        ),
       },
       metadata: { tags: ['Quiz'] },
     },
@@ -83,7 +89,9 @@ export const quizContract = c.router(
       pathParams: quizIdParamSchema.merge(questionIdParamSchema),
       body: reorderQuestionBodySchema,
       responses: {
-        200: createSuccessResponseSchema(questionShapeSchema),
+        200: createSuccessResponseSchema(
+          z.object({ question: questionShapeSchema })
+        ),
       },
       metadata: { tags: ['Quiz'] },
     },
