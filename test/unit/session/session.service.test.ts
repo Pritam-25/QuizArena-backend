@@ -5,9 +5,9 @@ import { SessionService } from '../../../src/modules/session/session.service.js'
 import type { SessionRepository } from '../../../src/modules/session/session.repository.js';
 import { ERROR_CODES } from '../../../src/shared/utils/errors/errorCodes.js';
 import { statusCode } from '../../../src/shared/utils/http/statusCodes.js';
-import * as sessionState from '../../../src/infrastructure/session.state.js';
+import * as sessionState from '../../../src/modules/session/domain/session.state.js';
 
-vi.mock('@infrastructure/session.state.js', () => ({
+vi.mock('@modules/session/domain/session.state.js', () => ({
   createSessionState: vi.fn(),
   addPlayer: vi.fn(),
 }));
