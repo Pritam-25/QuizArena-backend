@@ -12,21 +12,21 @@ export const sessionJoinSchema = z.object({
 });
 
 export const sessionHostJoinSchema = z.object({
-  sessionId: z.uuid('sessionId must be a valid UUID'),
+  sessionId: z.string().uuid('sessionId must be a valid UUID'),
 });
 
 export const sessionStartSchema = z.object({
-  sessionId: z.uuid('sessionId must be a valid UUID'),
+  sessionId: z.string().uuid('sessionId must be a valid UUID'),
 });
 
 export const questionNextSchema = z.object({
-  sessionId: z.uuid('sessionId must be a valid UUID'),
+  sessionId: z.string().uuid('sessionId must be a valid UUID'),
 });
 
 export const answerUpdateSchema = z
   .object({
-    questionId: z.uuid('questionId must be a valid UUID'),
-    optionId: z.uuid('optionId must be a valid UUID').optional(),
+    questionId: z.string().uuid('questionId must be a valid UUID'),
+    optionId: z.string().uuid('optionId must be a valid UUID').optional(),
     answerText: z
       .string()
       .max(500, 'answerText must be 500 characters or fewer')

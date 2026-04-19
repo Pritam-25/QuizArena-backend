@@ -1,5 +1,5 @@
 import { initContract } from '@ts-rest/core';
-import { z } from 'zod3';
+import { z } from 'zod';
 import {
   createSuccessResponseSchema,
   errorResponseSchema,
@@ -38,7 +38,7 @@ export const authContract = c.router(
       path: '/auth/me',
       summary: 'Get current authenticated user',
       responses: {
-        200: createSuccessResponseSchema(z.object({ user: userShapeSchema })),
+        200: createSuccessResponseSchema(userShapeSchema),
         401: errorResponseSchema,
       },
       metadata: { tags: ['Auth'] },

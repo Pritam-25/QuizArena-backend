@@ -22,7 +22,7 @@ const fractionalOrderSchema = z
 export const addQuestionSchema = z
   .object({
     questionText: z.string().min(1).trim(),
-    type: z.enum(QuestionType).default(QuestionType.MCQ),
+    type: z.nativeEnum(QuestionType).default(QuestionType.MCQ),
     timeLimit: z.number().int().nonnegative().default(30), // default 30 seconds
     points: z.number().int().nonnegative().default(1),
     prevOrder: fractionalOrderSchema.optional(),

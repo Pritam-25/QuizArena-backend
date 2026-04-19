@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@anatine/zod-openapi':
         specifier: ^2.2.8
-        version: 2.2.8(openapi3-ts@2.0.2)(zod@4.3.6)
+        version: 2.2.8(openapi3-ts@2.0.2)(zod@3.25.76)
       '@opentelemetry/api':
         specifier: ^1.9.1
         version: 1.9.1
@@ -55,13 +55,13 @@ importers:
         version: 8.3.0(socket.io-adapter@2.5.6)
       '@t3-oss/env-core':
         specifier: ^0.13.11
-        version: 0.13.11(typescript@6.0.2)(valibot@1.2.0(typescript@6.0.2))(zod@4.3.6)
+        version: 0.13.11(typescript@6.0.2)(valibot@1.2.0(typescript@6.0.2))(zod@3.25.76)
       '@ts-rest/core':
         specifier: ^3.52.1
-        version: 3.52.1(@types/node@25.5.2)(zod@4.3.6)
+        version: 3.52.1(@types/node@25.5.2)(zod@3.25.76)
       '@ts-rest/express':
         specifier: ^3.52.1
-        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@25.5.2)(zod@4.3.6))(express@5.2.1)(zod@4.3.6)
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@25.5.2)(zod@3.25.76))(express@5.2.1)(zod@3.25.76)
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
@@ -117,18 +117,15 @@ importers:
         specifier: ^4.21.0
         version: 4.21.0
       zod:
-        specifier: ^4.3.6
-        version: 4.3.6
+        specifier: ^3.25.76
+        version: 3.25.76
       zod-openapi:
         specifier: ^5.4.6
-        version: 5.4.6(zod@4.3.6)
-      zod3:
-        specifier: npm:zod@^3.25.76
-        version: zod@3.25.76
+        version: 5.4.6(zod@3.25.76)
     devDependencies:
       '@ts-rest/open-api':
         specifier: ^3.52.1
-        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@25.5.2)(zod@4.3.6))(zod@4.3.6)
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@25.5.2)(zod@3.25.76))(zod@3.25.76)
       '@types/cookie-parser':
         specifier: ^1.4.10
         version: 1.4.10(@types/express@5.0.6)
@@ -5240,17 +5237,17 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
-  '@anatine/zod-openapi@1.14.2(openapi3-ts@2.0.2)(zod@4.3.6)':
+  '@anatine/zod-openapi@1.14.2(openapi3-ts@2.0.2)(zod@3.25.76)':
     dependencies:
       openapi3-ts: 2.0.2
       ts-deepmerge: 6.2.1
-      zod: 4.3.6
+      zod: 3.25.76
 
-  '@anatine/zod-openapi@2.2.8(openapi3-ts@2.0.2)(zod@4.3.6)':
+  '@anatine/zod-openapi@2.2.8(openapi3-ts@2.0.2)(zod@3.25.76)':
     dependencies:
       openapi3-ts: 2.0.2
       ts-deepmerge: 6.2.1
-      zod: 4.3.6
+      zod: 3.25.76
 
   '@babel/helper-string-parser@7.27.1': {}
 
@@ -7084,11 +7081,11 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@t3-oss/env-core@0.13.11(typescript@6.0.2)(valibot@1.2.0(typescript@6.0.2))(zod@4.3.6)':
+  '@t3-oss/env-core@0.13.11(typescript@6.0.2)(valibot@1.2.0(typescript@6.0.2))(zod@3.25.76)':
     optionalDependencies:
       typescript: 6.0.2
       valibot: 1.2.0(typescript@6.0.2)
-      zod: 4.3.6
+      zod: 3.25.76
 
   '@tanstack/virtual-core@3.13.23': {}
 
@@ -7097,24 +7094,24 @@ snapshots:
       '@tanstack/virtual-core': 3.13.23
       vue: 3.5.32(typescript@6.0.2)
 
-  '@ts-rest/core@3.52.1(@types/node@25.5.2)(zod@4.3.6)':
+  '@ts-rest/core@3.52.1(@types/node@25.5.2)(zod@3.25.76)':
     optionalDependencies:
       '@types/node': 25.5.2
-      zod: 4.3.6
+      zod: 3.25.76
 
-  '@ts-rest/express@3.52.1(@ts-rest/core@3.52.1(@types/node@25.5.2)(zod@4.3.6))(express@5.2.1)(zod@4.3.6)':
+  '@ts-rest/express@3.52.1(@ts-rest/core@3.52.1(@types/node@25.5.2)(zod@3.25.76))(express@5.2.1)(zod@3.25.76)':
     dependencies:
-      '@ts-rest/core': 3.52.1(@types/node@25.5.2)(zod@4.3.6)
+      '@ts-rest/core': 3.52.1(@types/node@25.5.2)(zod@3.25.76)
       express: 5.2.1
     optionalDependencies:
-      zod: 4.3.6
+      zod: 3.25.76
 
-  '@ts-rest/open-api@3.52.1(@ts-rest/core@3.52.1(@types/node@25.5.2)(zod@4.3.6))(zod@4.3.6)':
+  '@ts-rest/open-api@3.52.1(@ts-rest/core@3.52.1(@types/node@25.5.2)(zod@3.25.76))(zod@3.25.76)':
     dependencies:
-      '@anatine/zod-openapi': 1.14.2(openapi3-ts@2.0.2)(zod@4.3.6)
-      '@ts-rest/core': 3.52.1(@types/node@25.5.2)(zod@4.3.6)
+      '@anatine/zod-openapi': 1.14.2(openapi3-ts@2.0.2)(zod@3.25.76)
+      '@ts-rest/core': 3.52.1(@types/node@25.5.2)(zod@3.25.76)
       openapi3-ts: 2.0.2
-      zod: 4.3.6
+      zod: 3.25.76
 
   '@tsconfig/node10@1.0.12': {}
 
@@ -11152,9 +11149,9 @@ snapshots:
       grammex: 3.1.12
       graphmatch: 1.1.1
 
-  zod-openapi@5.4.6(zod@4.3.6):
+  zod-openapi@5.4.6(zod@3.25.76):
     dependencies:
-      zod: 4.3.6
+      zod: 3.25.76
 
   zod@3.25.76: {}
 

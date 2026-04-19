@@ -36,7 +36,7 @@
     "docker:down": "docker compose -f infra/docker/docker-compose.yml down",
     "docker:build": "docker compose -f infra/docker/docker-compose.yml build",
     "docker:logs": "docker compose -f infra/docker/docker-compose.yml logs -f",
-    "docs:generate": "tsx ./src/docs/generate-openapi.ts"
+    "docs:generate": "tsx ./src/docs/generate-openapi.ts && tsx ./src/docs/postprocess-openapi.ts"
   },
   "keywords": [],
   "author": "",
@@ -106,8 +106,7 @@
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
-    "zod": "^4.3.6",
-    "zod-openapi": "^5.4.6",
-    "zod3": "npm:zod@^3.25.76"
+    "zod": "^3.25.76",
+    "zod-openapi": "^5.4.6"
   }
 }

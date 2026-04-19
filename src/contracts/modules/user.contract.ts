@@ -1,5 +1,5 @@
 import { initContract } from '@ts-rest/core';
-import { z } from 'zod3';
+import { z } from 'zod';
 import { createUserBodySchema, uuidParamSchema } from '@contracts/schemas.js';
 import {
   createSuccessResponseSchema,

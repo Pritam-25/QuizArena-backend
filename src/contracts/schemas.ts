@@ -1,4 +1,4 @@
-import { z } from 'zod3';
+import { z } from 'zod';
 
 export const uuidParamSchema: any = z.object({
   id: z.string().uuid().default('123e4567-e89b-12d3-a456-426614174000'),

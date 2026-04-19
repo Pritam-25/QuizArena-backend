@@ -48,16 +48,22 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "username": {
-                      "type": "string"
-                    },
-                    "email": {
-                      "type": "string",
-                      "format": "email"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        }
+                      },
+                      "required": ["id", "username", "email"]
                     },
                     "meta": {
                       "type": "object",
@@ -66,7 +72,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message", "id", "username", "email"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -130,7 +136,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "post_auth_register"
       }
     },
     "/api/v1/auth/login": {
@@ -175,16 +182,22 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "username": {
-                      "type": "string"
-                    },
-                    "email": {
-                      "type": "string",
-                      "format": "email"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        }
+                      },
+                      "required": ["id", "username", "email"]
                     },
                     "meta": {
                       "type": "object",
@@ -193,7 +206,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message", "id", "username", "email"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -257,7 +270,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "post_auth_login"
       }
     },
     "/api/v1/auth/me": {
@@ -280,7 +294,7 @@
                     "message": {
                       "type": "string"
                     },
-                    "user": {
+                    "data": {
                       "type": "object",
                       "properties": {
                         "id": {
@@ -304,7 +318,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message", "user"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -368,7 +382,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "get_auth_me"
       }
     },
     "/api/v1/users": {
@@ -407,16 +422,22 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "username": {
-                      "type": "string"
-                    },
-                    "email": {
-                      "type": "string",
-                      "format": "email"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        }
+                      },
+                      "required": ["id", "username", "email"]
                     },
                     "meta": {
                       "type": "object",
@@ -425,12 +446,13 @@
                       }
                     }
                   },
-                  "required": ["success", "message", "id", "username", "email"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "post_users"
       }
     },
     "/api/v1/users/{id}": {
@@ -464,16 +486,22 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "username": {
-                      "type": "string"
-                    },
-                    "email": {
-                      "type": "string",
-                      "format": "email"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        }
+                      },
+                      "required": ["id", "username", "email"]
                     },
                     "meta": {
                       "type": "object",
@@ -482,7 +510,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message", "id", "username", "email"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -528,7 +556,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "get_users_id"
       }
     },
     "/api/v1/quizzes": {
@@ -576,22 +605,28 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "title": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string",
-                      "nullable": true
-                    },
-                    "isPublished": {
-                      "type": "boolean"
-                    },
-                    "createdBy": {
-                      "type": "string"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "isPublished": {
+                          "type": "boolean"
+                        },
+                        "createdBy": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "title", "isPublished", "createdBy"]
                     },
                     "meta": {
                       "type": "object",
@@ -600,14 +635,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "success",
-                    "message",
-                    "id",
-                    "title",
-                    "isPublished",
-                    "createdBy"
-                  ]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -671,7 +699,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "post_quizzes"
       },
       "get": {
         "summary": "Get all quizzes",
@@ -692,6 +721,32 @@
                     "message": {
                       "type": "string"
                     },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "isPublished": {
+                            "type": "boolean"
+                          },
+                          "createdBy": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["id", "title", "isPublished", "createdBy"]
+                      }
+                    },
                     "meta": {
                       "type": "object",
                       "additionalProperties": {
@@ -699,12 +754,13 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "get_quizzes"
       }
     },
     "/api/v1/quizzes/{id}": {
@@ -738,22 +794,28 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "title": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string",
-                      "nullable": true
-                    },
-                    "isPublished": {
-                      "type": "boolean"
-                    },
-                    "createdBy": {
-                      "type": "string"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "isPublished": {
+                          "type": "boolean"
+                        },
+                        "createdBy": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "title", "isPublished", "createdBy"]
                     },
                     "meta": {
                       "type": "object",
@@ -762,14 +824,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "success",
-                    "message",
-                    "id",
-                    "title",
-                    "isPublished",
-                    "createdBy"
-                  ]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -833,7 +888,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "get_quizzes_id"
       }
     },
     "/api/v1/quizzes/{quizId}/questions": {
@@ -908,25 +964,38 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "quizId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "questionText": {
-                      "type": "string"
-                    },
-                    "type": {
-                      "type": "string"
-                    },
-                    "timeLimit": {
-                      "type": "integer"
-                    },
-                    "points": {
-                      "type": "integer"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quizId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "questionText": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "timeLimit": {
+                          "type": "integer"
+                        },
+                        "points": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "quizId",
+                        "questionText",
+                        "type",
+                        "timeLimit",
+                        "points"
+                      ]
                     },
                     "meta": {
                       "type": "object",
@@ -935,16 +1004,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "success",
-                    "message",
-                    "id",
-                    "quizId",
-                    "questionText",
-                    "type",
-                    "timeLimit",
-                    "points"
-                  ]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -1008,7 +1068,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "post_quizzes_quizId_questions"
       }
     },
     "/api/v1/quizzes/questions/{questionId}/options": {
@@ -1073,6 +1134,32 @@
                     "message": {
                       "type": "string"
                     },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "isPublished": {
+                            "type": "boolean"
+                          },
+                          "createdBy": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["id", "title", "isPublished", "createdBy"]
+                      }
+                    },
                     "meta": {
                       "type": "object",
                       "additionalProperties": {
@@ -1080,12 +1167,13 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "post_quizzes_questions_questionId_options"
       }
     },
     "/api/v1/quizzes/{quizId}/questions/{questionId}/reorder": {
@@ -1151,25 +1239,38 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "quizId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "questionText": {
-                      "type": "string"
-                    },
-                    "type": {
-                      "type": "string"
-                    },
-                    "timeLimit": {
-                      "type": "integer"
-                    },
-                    "points": {
-                      "type": "integer"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quizId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "questionText": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "timeLimit": {
+                          "type": "integer"
+                        },
+                        "points": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "quizId",
+                        "questionText",
+                        "type",
+                        "timeLimit",
+                        "points"
+                      ]
                     },
                     "meta": {
                       "type": "object",
@@ -1178,21 +1279,13 @@
                       }
                     }
                   },
-                  "required": [
-                    "success",
-                    "message",
-                    "id",
-                    "quizId",
-                    "questionText",
-                    "type",
-                    "timeLimit",
-                    "points"
-                  ]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "patch_quizzes_quizId_questions_questionId_reorder"
       }
     },
     "/api/v1/sessions": {
@@ -1232,20 +1325,26 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "quizId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "hostId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "status": {
-                      "type": "string"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quizId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "hostId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "quizId", "hostId", "status"]
                     },
                     "meta": {
                       "type": "object",
@@ -1254,19 +1353,13 @@
                       }
                     }
                   },
-                  "required": [
-                    "success",
-                    "message",
-                    "id",
-                    "quizId",
-                    "hostId",
-                    "status"
-                  ]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "post_sessions"
       }
     },
     "/api/v1/sessions/{sessionId}": {
@@ -1300,20 +1393,26 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "quizId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "hostId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "status": {
-                      "type": "string"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quizId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "hostId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "quizId", "hostId", "status"]
                     },
                     "meta": {
                       "type": "object",
@@ -1322,14 +1421,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "success",
-                    "message",
-                    "id",
-                    "quizId",
-                    "hostId",
-                    "status"
-                  ]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -1393,7 +1485,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "get_sessions_sessionId"
       }
     },
     "/api/v1/sessions/join": {
@@ -1439,6 +1532,9 @@
                     "message": {
                       "type": "string"
                     },
+                    "data": {
+                      "nullable": true
+                    },
                     "meta": {
                       "type": "object",
                       "additionalProperties": {
@@ -1451,7 +1547,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "post_sessions_join"
       }
     },
     "/api/v1/sessions/{sessionId}/start": {
@@ -1485,20 +1582,26 @@
                     "message": {
                       "type": "string"
                     },
-                    "id": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "quizId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "hostId": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "status": {
-                      "type": "string"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quizId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "hostId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "quizId", "hostId", "status"]
                     },
                     "meta": {
                       "type": "object",
@@ -1507,19 +1610,13 @@
                       }
                     }
                   },
-                  "required": [
-                    "success",
-                    "message",
-                    "id",
-                    "quizId",
-                    "hostId",
-                    "status"
-                  ]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "post_sessions_sessionId_start"
       }
     },
     "/api/v1/health": {
@@ -1542,15 +1639,22 @@
                     "message": {
                       "type": "string"
                     },
-                    "status": {
-                      "type": "string",
-                      "enum": ["healthy"]
-                    },
-                    "timestamp": {
-                      "type": "string"
-                    },
-                    "uptime": {
-                      "type": "number"
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["healthy"]
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "uptime": {
+                          "type": "number"
+                        }
+                      },
+                      "required": ["status", "timestamp", "uptime"],
+                      "additionalProperties": true
                     },
                     "meta": {
                       "type": "object",
@@ -1559,18 +1663,13 @@
                       }
                     }
                   },
-                  "required": [
-                    "success",
-                    "message",
-                    "status",
-                    "timestamp",
-                    "uptime"
-                  ]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "get_health"
       }
     }
   },
