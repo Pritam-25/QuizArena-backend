@@ -1,8 +1,22 @@
 import { parse as parseCookie } from 'cookie';
 import logger from '@infrastructure/logger/logger.js';
 import { AUTH_COOKIE_NAME } from '@modules/auth/auth.constants.js';
+import type {
+  ClientToServerEvents,
+  InterServerEvents,
+  ServerToClientEvents,
+  SocketData,
+} from '@shared/utils/socket/index.js';
 import type { Socket } from 'socket.io';
 import { extractToken, verifyToken } from '@shared/utils/auth/index.js';
+
+/** Fully-typed socket handle used inside infrastructure middleware. */
+type AppSocket = Socket<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
 
 type SocketMiddlewareNext = (error?: Error) => void;
 
@@ -19,7 +33,7 @@ const normalizeAuthToken = (value: string | undefined) => {
   return trimmed.startsWith('Bearer ') ? trimmed.slice(7).trim() : trimmed;
 };
 
-const extractTokenFromHandshakeAuth = (socket: Socket) => {
+const extractTokenFromHandshakeAuth = (socket: AppSocket) => {
   const authPayload = socket.handshake.auth;
 
   if (typeof authPayload === 'string') {
@@ -49,7 +63,7 @@ const extractTokenFromHandshakeAuth = (socket: Socket) => {
  * @param socket - Incoming socket connection.
  * @returns JWT token if present.
  */
-const extractTokenFromHandshake = (socket: Socket) => {
+const extractTokenFromHandshake = (socket: AppSocket) => {
   const cookieHeader = socket.handshake.headers.cookie;
   const cookieSource = Array.isArray(cookieHeader)
     ? cookieHeader.join('; ')
@@ -81,7 +95,7 @@ const extractTokenFromHandshake = (socket: Socket) => {
  * socket data for downstream event handlers.
  */
 export const socketAuthMiddleware = (
-  socket: Socket,
+  socket: AppSocket,
   next: SocketMiddlewareNext
 ) => {
   const token = extractTokenFromHandshake(socket);

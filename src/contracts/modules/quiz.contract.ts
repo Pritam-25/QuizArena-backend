@@ -1,5 +1,5 @@
 import { initContract } from '@ts-rest/core';
-import { z } from 'zod3';
+import { z } from 'zod';
 import {
   createSuccessResponseSchema,
   errorResponseSchema,
@@ -36,7 +36,7 @@ export const quizContract = c.router(
       path: '/quizzes',
       summary: 'Get all quizzes',
       responses: {
-        200: createSuccessResponseSchema(z.array(quizShapeSchema) as any),
+        200: createSuccessResponseSchema(z.array(quizShapeSchema)),
       },
       metadata: { tags: ['Quiz'] },
     },
@@ -72,7 +72,7 @@ export const quizContract = c.router(
         .array(addOptionsItemBodySchema)
         .default([addOptionsItemBodySchema.parse({})]) as any,
       responses: {
-        201: createSuccessResponseSchema(z.unknown()),
+        201: createSuccessResponseSchema(z.array(quizShapeSchema)),
       },
       metadata: { tags: ['Quiz'] },
     },

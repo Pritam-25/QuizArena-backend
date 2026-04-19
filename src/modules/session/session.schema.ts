@@ -6,15 +6,11 @@ import { normalizeSessionJoinCode } from './utils/joinCode.js';
  * Request body schema for creating a session.
  */
 export const createSessionSchema = z.object({
-  quizId: z.uuid({
-    error: issue =>
-      issue.input === undefined ? 'quizId is required' : undefined,
-  }),
+  quizId: z
+    .string({ required_error: 'quizId is required' })
+    .uuid('quizId must be a valid UUID'),
 });
 
-/**
- * Data Transfer Object for creating a session.
- */
 export type CreateSessionInputDto = z.infer<typeof createSessionSchema>;
 
 /**
@@ -22,44 +18,30 @@ export type CreateSessionInputDto = z.infer<typeof createSessionSchema>;
  */
 export const joinSessionSchema = z.object({
   joinCode: z
-    .string({
-      error: issue =>
-        issue.input === undefined ? 'joinCode is required' : undefined,
-    })
+    .string({ required_error: 'joinCode is required' })
     .trim()
-    .min(1, { error: 'joinCode is required' })
+    .min(1, 'joinCode is required')
     .transform(normalizeSessionJoinCode)
-    .pipe(
-      z.uuid({
-        error: 'joinCode must be a valid UUID or quizArena.com/<valid-uuid>',
-      })
-    ),
+    .refine(val => z.string().uuid().safeParse(val).success, {
+      message: 'joinCode must be a valid UUID or quizArena.com/<valid-uuid>',
+    }),
+
   nickname: z
-    .string({
-      error: issue =>
-        issue.input === undefined ? 'nickname is required' : undefined,
-    })
+    .string({ required_error: 'nickname is required' })
     .trim()
-    .min(1, { error: 'nickname is required' })
-    .max(30, { error: 'nickname must be at most 30 characters' }),
+    .min(1, 'nickname is required')
+    .max(30, 'nickname must be at most 30 characters'),
 });
 
-/**
- * Data Transfer Object for joining a session.
- */
 export type JoinSessionInputDto = z.infer<typeof joinSessionSchema>;
 
 /**
  * Request body schema for updating session status.
  */
 export const updateSessionStatusSchema = z.object({
-  status: z.enum(SessionStatus, {
-    error: issue =>
-      issue.input === undefined ? 'status is required' : undefined,
+  status: z.nativeEnum(SessionStatus, {
+    errorMap: () => ({ message: 'status is required' }),
   }),
 });
 
-/**
- * Data Transfer Object for updating session status.
- */
 export type UpdateSessionStatusDto = z.infer<typeof updateSessionStatusSchema>;

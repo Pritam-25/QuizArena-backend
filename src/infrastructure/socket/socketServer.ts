@@ -3,13 +3,28 @@ import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
 import { Server as SocketIOServer } from 'socket.io';
 import { env } from '@config/env.js';
+import { SOCKET_EVENTS } from '@shared/utils/socket/index.js';
+import type {
+  ClientToServerEvents,
+  InterServerEvents,
+  ServerToClientEvents,
+  SocketData,
+} from '@shared/utils/socket/index.js';
 import logger from '@infrastructure/logger/logger.js';
 import { socketAuthMiddleware } from './socketAuth.js';
-import { registerSessionSocketHandlers } from './sessionSocket.js';
+import { registerSessionSocketHandlers } from '@modules/session/session.socket.handlers.js';
 
 type RedisClient = ReturnType<typeof createClient>;
 
-let io: SocketIOServer | null = null;
+/** Fully-typed Socket.IO server type used throughout the application. */
+export type AppServer = SocketIOServer<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
+
+let io: AppServer | null = null;
 let pubClient: RedisClient | null = null;
 let subClient: RedisClient | null = null;
 
@@ -83,20 +98,31 @@ const connectAdapterClients = async () => {
  */
 export const setupSocketServer = async (httpServer: HttpServer) => {
   if (!io) {
-    io = new SocketIOServer(httpServer, {
+    io = new SocketIOServer<
+      ClientToServerEvents,
+      ServerToClientEvents,
+      InterServerEvents,
+      SocketData
+    >(httpServer, {
       cors: {
         origin: env.CORS_ORIGINS,
         credentials: true,
       },
     });
 
-    io.use(socketAuthMiddleware);
+    // Cast needed: Socket.IO's middleware types don't carry generics.
+    io.use(socketAuthMiddleware as Parameters<typeof io.use>[0]);
 
     io.on('connection', socket => {
       logger.info(
         { socketId: socket.id, userId: socket.data.userId },
         'Socket connected'
       );
+
+      // Notify the client once the connection is established and auth has resolved.
+      socket.emit(SOCKET_EVENTS.SOCKET_READY, {
+        userId: socket.data.userId ?? null,
+      });
 
       registerSessionSocketHandlers(io!, socket);
 

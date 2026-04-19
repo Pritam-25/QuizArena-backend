@@ -2,41 +2,31 @@ import { z } from 'zod';
 
 export const registerSchema = z.object({
   username: z
-    .string({
-      error: issue =>
-        issue.input === undefined ? 'username is required' : undefined,
-    })
+    .string({ required_error: 'username is required' })
     .trim()
-    .min(1),
+    .min(1, 'username cannot be empty'),
+
   email: z
-    .email({
-      error: issue =>
-        issue.input === undefined ? 'email is required' : undefined,
-    })
-    .trim(),
-  password: z
-    .string({
-      error: issue =>
-        issue.input === undefined ? 'password is required' : undefined,
-    })
+    .string({ required_error: 'email is required' })
     .trim()
-    .min(6),
+    .email('invalid email'),
+
+  password: z
+    .string({ required_error: 'password is required' })
+    .trim()
+    .min(6, 'password must be at least 6 characters'),
 });
 
 export const loginSchema = z.object({
   email: z
-    .email({
-      error: issue =>
-        issue.input === undefined ? 'email is required' : undefined,
-    })
-    .trim(),
-  password: z
-    .string({
-      error: issue =>
-        issue.input === undefined ? 'password is required' : undefined,
-    })
+    .string({ required_error: 'email is required' })
     .trim()
-    .min(1),
+    .email('invalid email'),
+
+  password: z
+    .string({ required_error: 'password is required' })
+    .trim()
+    .min(1, 'password cannot be empty'),
 });
 
 export type RegisterDto = z.infer<typeof registerSchema>;

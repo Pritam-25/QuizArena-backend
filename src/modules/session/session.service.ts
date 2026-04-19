@@ -2,7 +2,7 @@ import { SessionStatus } from '@generated/prisma/enums.js';
 import {
   addPlayer,
   createSessionState,
-} from '@infrastructure/session.state.js';
+} from '@modules/session/domain/session.state.js';
 import logger from '@infrastructure/logger/logger.js';
 import { ApiError, ERROR_CODES } from '@shared/utils/errors/index.js';
 import { statusCode } from '@shared/utils/http/statusCodes.js';

@@ -28,24 +28,14 @@
                     "type": "string",
                     "minLength": 6
                   }
-                },
-                "example": {
-                  "username": "john_doe",
-                  "email": "john@example.com",
-                  "password": "password123"
                 }
-              },
-              "example": {
-                "username": "john_doe",
-                "email": "john@example.com",
-                "password": "password123"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "User registered successfully",
+            "description": "201",
             "content": {
               "application/json": {
                 "schema": {
@@ -61,25 +51,19 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "user": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string",
-                              "format": "uuid"
-                            },
-                            "username": {
-                              "type": "string"
-                            },
-                            "email": {
-                              "type": "string",
-                              "format": "email"
-                            }
-                          },
-                          "required": ["id", "username", "email"]
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
                         }
                       },
-                      "required": ["user"]
+                      "required": ["id", "username", "email"]
                     },
                     "meta": {
                       "type": "object",
@@ -88,31 +72,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message"],
-                  "example": {
-                    "success": true,
-                    "message": "Registration successful",
-                    "data": {
-                      "user": {
-                        "id": "123e4567-e89b-12d3-a456-426614174000",
-                        "username": "john_doe",
-                        "email": "john@example.com"
-                      }
-                    },
-                    "meta": {}
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "Registration successful",
-                  "data": {
-                    "user": {
-                      "id": "123e4567-e89b-12d3-a456-426614174000",
-                      "username": "john_doe",
-                      "email": "john@example.com"
-                    }
-                  },
-                  "meta": {}
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -176,7 +136,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "post_auth_register"
       }
     },
     "/api/v1/auth/login": {
@@ -199,17 +160,9 @@
                   "password": {
                     "default": "password123",
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 6
                   }
-                },
-                "example": {
-                  "email": "john@example.com",
-                  "password": "password123"
                 }
-              },
-              "example": {
-                "email": "john@example.com",
-                "password": "password123"
               }
             }
           }
@@ -232,25 +185,19 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "user": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string",
-                              "format": "uuid"
-                            },
-                            "username": {
-                              "type": "string"
-                            },
-                            "email": {
-                              "type": "string",
-                              "format": "email"
-                            }
-                          },
-                          "required": ["id", "username", "email"]
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
                         }
                       },
-                      "required": ["user"]
+                      "required": ["id", "username", "email"]
                     },
                     "meta": {
                       "type": "object",
@@ -259,7 +206,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -323,7 +270,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "post_auth_login"
       }
     },
     "/api/v1/auth/me": {
@@ -349,25 +297,19 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "user": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "string",
-                              "format": "uuid"
-                            },
-                            "username": {
-                              "type": "string"
-                            },
-                            "email": {
-                              "type": "string",
-                              "format": "email"
-                            }
-                          },
-                          "required": ["id", "username", "email"]
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
                         }
                       },
-                      "required": ["user"]
+                      "required": ["id", "username", "email"]
                     },
                     "meta": {
                       "type": "object",
@@ -376,7 +318,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -440,7 +382,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "get_auth_me"
       }
     },
     "/api/v1/users": {
@@ -459,13 +402,7 @@
                     "default": "guest_player",
                     "type": "string"
                   }
-                },
-                "example": {
-                  "username": "guest_player"
                 }
-              },
-              "example": {
-                "username": "guest_player"
               }
             }
           }
@@ -478,20 +415,44 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
                     "message": {
                       "type": "string"
                     },
                     "data": {
-                      "nullable": true
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        }
+                      },
+                      "required": ["id", "username", "email"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
                     }
                   },
-                  "required": ["message"],
-                  "additionalProperties": true
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "post_users"
       }
     },
     "/api/v1/users/{id}": {
@@ -504,6 +465,7 @@
             "in": "path",
             "required": true,
             "schema": {
+              "default": "123e4567-e89b-12d3-a456-426614174000",
               "type": "string",
               "format": "uuid"
             }
@@ -517,15 +479,38 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
                     "message": {
                       "type": "string"
                     },
                     "data": {
-                      "nullable": true
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        }
+                      },
+                      "required": ["id", "username", "email"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
                     }
                   },
-                  "required": ["message"],
-                  "additionalProperties": true
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -537,17 +522,42 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "message": {
-                      "type": "string"
+                    "success": {
+                      "type": "boolean",
+                      "enum": [false]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "statusCode": {
+                          "type": "integer"
+                        },
+                        "errorCode": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "nullable": true
+                        }
+                      },
+                      "required": ["statusCode", "errorCode", "message"]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "nullable": true
+                      }
                     }
                   },
-                  "required": ["message"],
-                  "additionalProperties": true
+                  "required": ["success", "error"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "get_users_id"
       }
     },
     "/api/v1/quizzes": {
@@ -575,17 +585,7 @@
                     "default": false,
                     "type": "boolean"
                   }
-                },
-                "example": {
-                  "title": "General Knowledge Quiz",
-                  "description": "A mixed quiz for all players",
-                  "isPublished": false
                 }
-              },
-              "example": {
-                "title": "General Knowledge Quiz",
-                "description": "A mixed quiz for all players",
-                "isPublished": false
               }
             }
           }
@@ -635,7 +635,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -699,7 +699,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "post_quizzes"
       },
       "get": {
         "summary": "Get all quizzes",
@@ -753,12 +754,13 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "get_quizzes"
       }
     },
     "/api/v1/quizzes/{id}": {
@@ -771,6 +773,7 @@
             "in": "path",
             "required": true,
             "schema": {
+              "default": "123e4567-e89b-12d3-a456-426614174000",
               "type": "string",
               "format": "uuid"
             }
@@ -821,7 +824,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -885,7 +888,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "get_quizzes_id"
       }
     },
     "/api/v1/quizzes/{quizId}/questions": {
@@ -898,6 +902,7 @@
             "in": "path",
             "required": true,
             "schema": {
+              "default": "123e4567-e89b-12d3-a456-426614174000",
               "type": "string",
               "format": "uuid"
             }
@@ -939,23 +944,7 @@
                     "type": "string",
                     "pattern": "^[a-z]+$"
                   }
-                },
-                "example": {
-                  "questionText": "What is the capital of France?",
-                  "type": "MCQ",
-                  "timeLimit": 30,
-                  "points": 1,
-                  "prevOrder": "a",
-                  "nextOrder": "c"
                 }
-              },
-              "example": {
-                "questionText": "What is the capital of France?",
-                "type": "MCQ",
-                "timeLimit": 30,
-                "points": 1,
-                "prevOrder": "a",
-                "nextOrder": "c"
               }
             }
           }
@@ -1015,7 +1004,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -1079,7 +1068,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "post_quizzes_quizId_questions"
       }
     },
     "/api/v1/quizzes/questions/{questionId}/options": {
@@ -1092,6 +1082,7 @@
             "in": "path",
             "required": true,
             "schema": {
+              "default": "123e4567-e89b-12d3-a456-426614174000",
               "type": "string",
               "format": "uuid"
             }
@@ -1123,36 +1114,8 @@
                       "type": "boolean"
                     }
                   }
-                },
-                "example": [
-                  {
-                    "optionText": "Paris",
-                    "isCorrect": true
-                  },
-                  {
-                    "optionText": "Berlin",
-                    "isCorrect": false
-                  },
-                  {
-                    "optionText": "Madrid",
-                    "isCorrect": false
-                  }
-                ]
-              },
-              "example": [
-                {
-                  "optionText": "Paris",
-                  "isCorrect": true
-                },
-                {
-                  "optionText": "Berlin",
-                  "isCorrect": false
-                },
-                {
-                  "optionText": "Madrid",
-                  "isCorrect": false
                 }
-              ]
+              }
             }
           }
         },
@@ -1172,7 +1135,30 @@
                       "type": "string"
                     },
                     "data": {
-                      "nullable": true
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "isPublished": {
+                            "type": "boolean"
+                          },
+                          "createdBy": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["id", "title", "isPublished", "createdBy"]
+                      }
                     },
                     "meta": {
                       "type": "object",
@@ -1181,12 +1167,13 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "post_quizzes_questions_questionId_options"
       }
     },
     "/api/v1/quizzes/{quizId}/questions/{questionId}/reorder": {
@@ -1199,6 +1186,7 @@
             "in": "path",
             "required": true,
             "schema": {
+              "default": "123e4567-e89b-12d3-a456-426614174000",
               "type": "string",
               "format": "uuid"
             }
@@ -1208,6 +1196,7 @@
             "in": "path",
             "required": true,
             "schema": {
+              "default": "123e4567-e89b-12d3-a456-426614174000",
               "type": "string",
               "format": "uuid"
             }
@@ -1230,15 +1219,7 @@
                     "type": "string",
                     "pattern": "^[a-z]+$"
                   }
-                },
-                "example": {
-                  "prevReorderToken": "a",
-                  "nextReorderToken": "c"
                 }
-              },
-              "example": {
-                "prevReorderToken": "a",
-                "nextReorderToken": "c"
               }
             }
           }
@@ -1298,12 +1279,13 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "patch_quizzes_quizId_questions_questionId_reorder"
       }
     },
     "/api/v1/sessions": {
@@ -1319,17 +1301,11 @@
                 "type": "object",
                 "properties": {
                   "quizId": {
-                    "default": "11111111-1111-1111-1111-111111111111",
+                    "default": "123e4567-e89b-12d3-a456-426614174000",
                     "type": "string",
                     "format": "uuid"
                   }
-                },
-                "example": {
-                  "quizId": "11111111-1111-1111-1111-111111111111"
                 }
-              },
-              "example": {
-                "quizId": "11111111-1111-1111-1111-111111111111"
               }
             }
           }
@@ -1377,12 +1353,13 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "post_sessions"
       }
     },
     "/api/v1/sessions/{sessionId}": {
@@ -1395,6 +1372,7 @@
             "in": "path",
             "required": true,
             "schema": {
+              "default": "123e4567-e89b-12d3-a456-426614174000",
               "type": "string",
               "format": "uuid"
             }
@@ -1443,7 +1421,7 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
@@ -1507,7 +1485,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "get_sessions_sessionId"
       }
     },
     "/api/v1/sessions/join": {
@@ -1523,8 +1502,9 @@
                 "type": "object",
                 "properties": {
                   "joinCode": {
-                    "default": "11111111-1111-1111-1111-111111111111",
-                    "type": "string"
+                    "default": "123e4567-e89b-12d3-a456-426614174000",
+                    "type": "string",
+                    "minLength": 1
                   },
                   "nickname": {
                     "default": "PlayerOne",
@@ -1532,15 +1512,7 @@
                     "minLength": 1,
                     "maxLength": 30
                   }
-                },
-                "example": {
-                  "joinCode": "11111111-1111-1111-1111-111111111111",
-                  "nickname": "PlayerOne"
                 }
-              },
-              "example": {
-                "joinCode": "11111111-1111-1111-1111-111111111111",
-                "nickname": "PlayerOne"
               }
             }
           }
@@ -1575,7 +1547,8 @@
               }
             }
           }
-        }
+        },
+        "operationId": "post_sessions_join"
       }
     },
     "/api/v1/sessions/{sessionId}/start": {
@@ -1588,6 +1561,7 @@
             "in": "path",
             "required": true,
             "schema": {
+              "default": "123e4567-e89b-12d3-a456-426614174000",
               "type": "string",
               "format": "uuid"
             }
@@ -1636,12 +1610,13 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "post_sessions_sessionId_start"
       }
     },
     "/api/v1/health": {
@@ -1688,12 +1663,13 @@
                       }
                     }
                   },
-                  "required": ["success", "message"]
+                  "required": ["success", "message", "data"]
                 }
               }
             }
           }
-        }
+        },
+        "operationId": "get_health"
       }
     }
   },

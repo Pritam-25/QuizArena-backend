@@ -1,9 +1,13 @@
 import type { Socket } from 'socket.io';
 import { buildErrorResponse } from '../http/apiResponses.js';
+import {
+  type ClientToServerEventKey,
+  SOCKET_EVENTS,
+} from '../socket/socketEvents.js';
 
 export const emitSocketError = (
   socket: Pick<Socket, 'emit'>,
-  eventName: string,
+  eventName: (typeof SOCKET_EVENTS)[ClientToServerEventKey],
   error: unknown,
   callback?: (response: any) => void
 ) => {

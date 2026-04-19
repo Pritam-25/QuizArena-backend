@@ -1,19 +1,19 @@
-import { z } from 'zod3';
+import { z } from 'zod';
 
 export const uuidParamSchema: any = z.object({
-  id: z.string().uuid(),
+  id: z.string().uuid().default('123e4567-e89b-12d3-a456-426614174000'),
 });
 
 export const quizIdParamSchema: any = z.object({
-  quizId: z.string().uuid(),
+  quizId: z.string().uuid().default('123e4567-e89b-12d3-a456-426614174000'),
 });
 
 export const questionIdParamSchema: any = z.object({
-  questionId: z.string().uuid(),
+  questionId: z.string().uuid().default('123e4567-e89b-12d3-a456-426614174000'),
 });
 
 export const sessionIdParamSchema: any = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.string().uuid().default('123e4567-e89b-12d3-a456-426614174000'),
 });
 
 export const registerBodySchema: any = z.object({

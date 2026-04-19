@@ -1,5 +1,5 @@
 import { initContract } from '@ts-rest/core';
-import { z } from 'zod3';
+import { z } from 'zod';
 import { createSuccessResponseSchema } from '@contracts/common.js';
 
 const c = initContract();
@@ -18,7 +18,7 @@ export const systemContract = c.router(
               timestamp: z.string(),
               uptime: z.number(),
             })
-            .passthrough() as any
+            .passthrough()
         ),
       },
       metadata: { tags: ['System'] },

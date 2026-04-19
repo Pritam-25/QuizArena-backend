@@ -8,16 +8,19 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(['development', 'production', 'test'])
       .default('development'),
-    DATABASE_URL: z.url(),
-    REDIS_URL: z.url().refine(
-      value => {
-        const protocol = new URL(value).protocol;
-        return protocol === 'redis:' || protocol === 'rediss:';
-      },
-      {
-        message: 'REDIS_URL must use redis:// or rediss://',
-      }
-    ),
+    DATABASE_URL: z.string().url(),
+    REDIS_URL: z
+      .string()
+      .url()
+      .refine(
+        value => {
+          const protocol = new URL(value).protocol;
+          return protocol === 'redis:' || protocol === 'rediss:';
+        },
+        {
+          message: 'REDIS_URL must use redis:// or rediss://',
+        }
+      ),
     CORS_ORIGINS: z
       .string()
       .default('http://localhost:3000')
@@ -32,9 +35,9 @@ export const env = createEnv({
       }),
     JWT_SECRET: z.string().min(1),
     SERVICE_NAME: z.string().default('quiz-arena-api'),
-    OTEL_EXPORTER_OTLP_ENDPOINT: z.url().optional(),
+    OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
     OTEL_DEBUG: z.enum(['true', 'false']).default('false'),
-    LOKI_HOST: z.url().optional(),
+    LOKI_HOST: z.string().url().optional(),
     PUBLIC_URL: z.string().optional(),
     BASE_URL: z.string().optional(),
   },
